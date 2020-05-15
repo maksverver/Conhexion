@@ -1,0 +1,17 @@
+ - Better launcher icon
+ - Hex game victory conditions
+ - Tutorial page(s) that you can swipe through.
+    This puzzle has only three simple rules:
+    (1) "Paths" must connect
+    (2) "Backsides" must not touch/overlap
+    (3) Connect all pieces into a single group
+    Hint: don't create loops?
+ - App menu:
+     - option to show tutorial
+     - option to reset current puzzle (confirm!)
+     - option to switch between rect/hex game
+ - Victory animation after solving!
+
+Stretch goals:
+  - Light/dark mode
+  - Ability to name & upload your solution
