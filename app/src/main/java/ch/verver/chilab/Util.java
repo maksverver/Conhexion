@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class Util {
+abstract class Util {
 
     /**
      * Checks that a list of positions is a valid puzzle piece configuration.
@@ -19,15 +19,12 @@ class Util {
      *
      * @return true if all of the above properties hold, false otherwise
      */
-    public static boolean validatePositions(List<Pos> positions, int count, int width, int height) {
+    static boolean validatePositions(List<Pos> positions, int count) {
         if (positions.size() != count) {
             return false;
         }
         Set<Pos> seen = new HashSet<>();
         for (Pos p : positions) {
-            if (p.x < 0 || p.x >= width || p.y < 0 || p.y >= height) {
-                return false;
-            }
             if (!seen.add(p)) {
                 return false;
             }

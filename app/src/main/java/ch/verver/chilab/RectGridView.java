@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -21,20 +22,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RectGridView extends View {
-
-    interface PiecePositionsChangedListener {
+    public interface PiecePositionsChangedListener {
         void piecePositionsChanged(RectGridView view);
     }
+
+    /**
+     * Number of padding squares to add around the bounding box of the pieces. This should be
+     * nonzero to allow the bounding box to be extended by dragging a piece into the padding.
+     */
+    private static final int GRID_PADDING = 1;
 
     private Context context;
     private Drawable[] pieceDrawables;
     private Drawable overlapHorizDrawable;
     private Drawable overlapVertiDrawable;
 
-    private PiecePositionIndex piecePositionIndex = new PiecePositionIndex(1, 1);
+    private PiecePositionIndex piecePositionIndex = new PiecePositionIndex();
 
-    private Matrix transformMatrix = new Matrix();
-    private Matrix inverseTransformMatrix = new Matrix();
+    // (drawOffsetX, drawOffsetY) is the pixel position of grid point (0, 0)
+    // drawScale is the size in pixels of a grid square
+    private int drawOffsetX;
+    private int drawOffsetY;
+    private float drawScale;
 
     @Nullable private DragState dragState = null;
 
@@ -93,55 +102,37 @@ public class RectGridView extends View {
         }
         overlapHorizDrawable = getDrawable(R.drawable.rect_overlap_horiz);
         overlapVertiDrawable = getDrawable(R.drawable.rect_overlap_verti);
-
-        sizeChanged();
     }
 
-    // Called whenever either the View size or the grid size changed.
-    private void sizeChanged() {
-        cancelDrag();
-        recalculateTransformMatrix();
-    }
-
-    private void recalculateTransformMatrix() {
-        transformMatrix.reset();
-        inverseTransformMatrix.reset();
-
-        int width = getWidth();
-        int height = getHeight();
-        if (width <= 0 || height <= 0) {
+    private void updateDrawDimensions() {
+        int viewWidth = getWidth();
+        int viewHeight = getHeight();
+        if (viewWidth <= 0 || viewHeight <= 0) {
             // Size is invalid / has not been set yet.
             return;
         }
 
-        // + 1 to add a half-cell padding around the edges
-        // TODO: use padding from getPaddingLeft()/getPaddingTop()/getPaddingRight()/getPaddingBottom() instead!
-        int gridWidth = piecePositionIndex.getGridWidth();
-        int gridHeight = piecePositionIndex.getGridHeight();
-        int usedWidth = Math.min(width, height * (gridWidth + 1) / (gridHeight + 1));
-        int usedHeight = Math.min(height, width * (gridHeight + 1) / (gridWidth + 1));
+        Rect gridBounds = piecePositionIndex.getBoundingRect();
+        gridBounds.left -= GRID_PADDING;
+        gridBounds.top -= GRID_PADDING;
+        gridBounds.right += GRID_PADDING;
+        gridBounds.bottom += GRID_PADDING;
+        int gridWidth = gridBounds.right - gridBounds.left;
+        int gridHeight = gridBounds.bottom - gridBounds.top;
+        int contentWidth = viewWidth - getPaddingLeft() - getPaddingRight();
+        int contentHeight = viewHeight - getPaddingTop() - getPaddingBottom();
+        int usedWidth = Math.min(viewWidth, viewHeight * gridWidth / gridHeight);
+        int usedHeight = Math.min(viewHeight, viewWidth * gridHeight / gridWidth);
 
-        transformMatrix.postTranslate(0.5f, 0.5f);  // padding
-        transformMatrix.postScale((float) usedWidth / (gridWidth + 1), (float) usedHeight / (gridHeight + 1));
-        transformMatrix.postTranslate(0.5f*(width - usedWidth), 0.5f*(height - usedHeight));
-
-        if (!transformMatrix.invert(inverseTransformMatrix)) {
-            LogUtil.e("Transform matrix could not be inverted!");
-        }
+        drawScale = Math.min(contentWidth / gridWidth, contentHeight / gridHeight);
+        drawOffsetX = getPaddingLeft() + (viewWidth - usedWidth) / 2 - (int) (drawScale * gridBounds.left);
+        drawOffsetY = getPaddingTop() + (viewHeight - usedHeight) / 2 - (int) (drawScale * gridBounds.top);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        sizeChanged();
-    }
-
-    public void setGridSize(int width, int height) {
-        if (width < 1 || height < 1) {
-            throw new IllegalArgumentException("grid width and height must be positive integers");
-        }
-        piecePositionIndex = new PiecePositionIndex(width, height, piecePositionIndex);
-        sizeChanged();
-        invalidate();
+        cancelDrag();
+        updateDrawDimensions();
     }
 
     public void setPiecePositions(List<Pos> positions) {
@@ -162,25 +153,52 @@ public class RectGridView extends View {
         return new PiecePositionIndex(piecePositionIndex);
     }
 
+    private int gridToPixelX(float x) {
+        return drawOffsetX + (int) (drawScale * x);
+    }
+
+    private int gridToPixelY(float y) {
+        return drawOffsetY + (int) (drawScale * y);
+    }
+
+    private float pixelToGridX(float x) {
+        return (x - drawOffsetX) / drawScale;
+    }
+
+    private float pixelToGridY(float y) {
+        return (y - drawOffsetY) / drawScale;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.setMatrix(transformMatrix);
+        int viewHeight = getHeight();
+        int viewWidth = getWidth();
 
         // Draw grid lines
-        Paint gridStrokePaint = new Paint();
-        gridStrokePaint.setColor(getColor(R.color.rectGridGridLines));
-        gridStrokePaint.setStyle(Paint.Style.STROKE);
-        gridStrokePaint.setStrokeWidth(0.05f);
-        gridStrokePaint.setStrokeCap(Paint.Cap.ROUND);
-        int gridWidth = piecePositionIndex.getGridWidth();
-        int gridHeight = piecePositionIndex.getGridHeight();
-        for (int y = 0; y <= gridHeight; ++y) {
-            canvas.drawLine(0, y, gridWidth, y, gridStrokePaint);
-        }
-        for (int x = 0; x <= gridWidth; ++x) {
-            canvas.drawLine(x, 0, x, gridHeight, gridStrokePaint);
+        {
+            Paint gridStrokePaint = new Paint();
+            gridStrokePaint.setColor(getColor(R.color.rectGridGridLines));
+            gridStrokePaint.setStyle(Paint.Style.STROKE);
+            gridStrokePaint.setStrokeWidth(0.05f * drawScale);
+            gridStrokePaint.setStrokeCap(Paint.Cap.ROUND);
+            int y = drawOffsetY;
+            while (y > 0) {
+                y -= drawScale;
+            }
+            while (y < viewHeight) {
+                canvas.drawLine(0, y, viewWidth, y, gridStrokePaint);
+                y += drawScale;
+            }
+            int x = drawOffsetX;
+            while (x > 0) {
+                x -= drawScale;
+            }
+            while (x < viewWidth) {
+                canvas.drawLine(x, 0, x, viewHeight, gridStrokePaint);
+                x += drawScale;
+            }
         }
 
         int draggedPieceIndex = dragState == null ? -1 : dragState.pieceIndex;
@@ -202,9 +220,9 @@ public class RectGridView extends View {
                 if (j != -1 && j != draggedPieceIndex && (
                         !RectDirection.LEFT.hasPath(i) ||
                         !RectDirection.RIGHT.hasPath(j))) {
-                    float[] bounds = {pos.x - 0.25f, pos.y, pos.x + 0.25f, pos.y + 1.0f};
-                    transformMatrix.mapPoints(bounds);
-                    overlapVertiDrawable.setBounds((int) bounds[0], (int) bounds[1], (int) bounds[2], (int) bounds[3]);
+                    overlapVertiDrawable.setBounds(
+                            gridToPixelX(pos.x - 0.25f), gridToPixelY(pos.y),
+                            gridToPixelX(pos.x + 0.25f), gridToPixelY(pos.y + 1.0f));
                     overlapVertiDrawable.draw(canvas);
                 }
 
@@ -212,9 +230,9 @@ public class RectGridView extends View {
                 if (j != -1 && j != draggedPieceIndex && (
                         !RectDirection.UP.hasPath(i) ||
                         !RectDirection.DOWN.hasPath(j))) {
-                    float[] bounds = {pos.x, pos.y - 0.25f, pos.x + 1.0f, pos.y + 0.25f};
-                    transformMatrix.mapPoints(bounds);
-                    overlapHorizDrawable.setBounds((int) bounds[0], (int) bounds[1], (int) bounds[2], (int) bounds[3]);
+                    overlapHorizDrawable.setBounds(
+                            gridToPixelX(pos.x), gridToPixelY(pos.y - 0.25f),
+                            gridToPixelX(pos.x + 1.0f), gridToPixelY( pos.y + 0.25f));
                     overlapHorizDrawable.draw(canvas);
                 }
             }
@@ -235,20 +253,20 @@ public class RectGridView extends View {
         if (pieceIndex >= 0 && pieceIndex < pieceDrawables.length) {
             Drawable pieceDrawable = pieceDrawables[pieceIndex];
             if (pieceDrawable != null) {
-                float[] bounds = {x - 0.5f, y - 0.5f, x + 1.5f, y + 1.5f};
-                transformMatrix.mapPoints(bounds);
-                pieceDrawable.setBounds((int) bounds[0], (int) bounds[1], (int) bounds[2], (int) bounds[3]);
+                pieceDrawable.setBounds(
+                        gridToPixelX(x - 0.5f), gridToPixelY(y - 0.5f),
+                        gridToPixelX(x + 1.5f), gridToPixelY(y + 1.5f));
                 pieceDrawable.draw(canvas);
                 return;
             }
         }
         // Fallback: draw piece as a colored square
-        float[] bounds = {x, y, x + 1, y + 1};
-        transformMatrix.mapPoints(bounds);
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.rgb(255 * pieceIndex / 14, 0, 255 - 255 * pieceIndex / 14));
-        canvas.drawRect(bounds[0], bounds[1], bounds[2], bounds[3], paint);
+        canvas.drawRect(
+                gridToPixelX(x), gridToPixelY(y),
+                gridToPixelX(x + 1), gridToPixelY(y + 1), paint);
     }
 
     @Override
@@ -273,23 +291,10 @@ public class RectGridView extends View {
         float deltaX = 0.0f, deltaY = 0.0f;
 
         private DragState(MotionEvent e) {
-            float[] xy = new float[]{e.getX(), e.getY()};
-            inverseTransformMatrix.mapPoints(xy);
-            float startX = xy[0];
-            float startY = xy[1];
-            int pieceIndex = -1;
-            int gridX = (int) Math.floor(startX);
-            int gridY = (int) Math.floor(startY);
-            for (int i = 0; i < piecePositionIndex.size(); ++i) {
-                if (piecePositionIndex.get(i).equals(gridX, gridY)) {
-                    pieceIndex = i;
-                    break;
-                }
-            }
-            this.startX = startX;
-            this.startY = startY;
+            this.startX = pixelToGridX(e.getX());
+            this.startY = pixelToGridY(e.getY());
             this.pointerId = e.getPointerId(0);
-            this.pieceIndex = pieceIndex;
+            this.pieceIndex = piecePositionIndex.indexOf((int) Math.floor(startX), (int) Math.floor(startY));
         }
 
         private boolean update(MotionEvent e) {
@@ -297,10 +302,8 @@ public class RectGridView extends View {
             if (pointerIndex < 0) {
                 return false;
             }
-            float[] xy = new float[]{e.getX(pointerIndex), e.getY(pointerIndex)};
-            inverseTransformMatrix.mapPoints(xy);
-            deltaX = xy[0] - startX;
-            deltaY = xy[1] - startY;
+            deltaX = pixelToGridX(e.getX(pointerIndex)) - startX;
+            deltaY = pixelToGridY(e.getY(pointerIndex)) - startY;
             return true;
         }
     }
@@ -348,10 +351,8 @@ public class RectGridView extends View {
         Pos newPos = new Pos(
                 oldPos.x + Math.round(dragState.deltaX),
                 oldPos.y + Math.round(dragState.deltaY));
-        if (piecePositionIndex.inRange(newPos)) {
-            piecePositionIndex.moveOrSwap(i, newPos);
-            piecePositionsChanged();
-        }
+        piecePositionIndex.moveOrSwap(i, newPos);
+        piecePositionsChanged();
         dragState = null;
         invalidate();
         return true;
@@ -365,24 +366,19 @@ public class RectGridView extends View {
         if (piecePositionsChangedListener != null) {
             piecePositionsChangedListener.piecePositionsChanged(this);
         }
+        updateDrawDimensions();  // bounding rect may have changed
     }
 
     private static class SavedState extends BaseSavedState {
-        final int gridWidth;
-        final int gridHeight;
         final List<Pos>  piecePositions;
 
         public SavedState(RectGridView view, Parcelable superState) {
             super(superState);
-            gridWidth = view.piecePositionIndex.getGridWidth();
-            gridHeight = view.piecePositionIndex.getGridHeight();
             piecePositions = view.piecePositionIndex.toList();
         }
 
         public SavedState(Parcel in) {
             super(in);
-            gridWidth = in.readInt();
-            gridHeight = in.readInt();
             piecePositions = new ArrayList<>();
             in.readList(piecePositions, null);
         }
@@ -390,14 +386,10 @@ public class RectGridView extends View {
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeInt(gridWidth);
-            out.writeInt(gridHeight);
             out.writeList(piecePositions);
         }
 
         void restore(RectGridView view) {
-            // Note: these methods must be called in this order!
-            view.setGridSize(gridWidth, gridHeight);
             view.setPiecePositions(piecePositions);
         }
     }

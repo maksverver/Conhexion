@@ -22,7 +22,6 @@ public class RectPuzzleActivity extends AppCompatActivity {
         rectGridView = findViewById(R.id.rect_grid_view);
 
         if (savedInstanceState == null) {
-            rectGridView.setGridSize(RectPuzzle.GRID_WIDTH, RectPuzzle.GRID_HEIGHT);
             rectGridView.setPiecePositions(restorePiecePositions());
         }
 
@@ -31,7 +30,7 @@ public class RectPuzzleActivity extends AppCompatActivity {
                     @Override
                     public void piecePositionsChanged(RectGridView view) {
                         // Debug-print base-64 encoded piece positions. Can be restored with e.g.:
-                        // adb shell am start-activity --es rect-pieces RUJiFUNSJWQ2NGMmUzM1 ch.verver.chilab/.RectPuzzleActivity
+                        // adb shell am start-activity --es rect-pieces XXX ch.verver.chilab/.RectPuzzleActivity
                         PiecePositionIndex piecePositionIndex = view.getPiecePositionIndex();
                         LogUtil.i("rect-pieces %s", RectPuzzle.encode(view.getPiecePositions()));
                         recalculateVictoryConditions(piecePositionIndex);

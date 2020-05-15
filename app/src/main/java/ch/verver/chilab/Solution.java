@@ -107,7 +107,6 @@ class Solution {
                 if (dir.hasPath(i)) {
                     int j = piecePositionIndex.indexOf(dir.step(pos));
                     if (j < 0 || !dir.opposite().hasPath(j)) {
-LogUtil.i("Missing connection %d %s %s %d", i, pos, dir, j);
                         ++result;
                     }
                 }

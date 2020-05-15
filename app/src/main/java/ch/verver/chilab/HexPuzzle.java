@@ -1,24 +1,20 @@
 package ch.verver.chilab;
 
-import android.util.Base64;
-
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
-public class HexPuzzle {
+/** Definitions for the real China Labyrinth puzzle played on a hexagonal grid. */
+abstract class HexPuzzle {
 
-    public static final int GRID_WIDTH = 17;
-    public static final int GRID_HEIGHT = 16;
     public static final int PIECE_COUNT = 63;
 
     public static ArrayList<Pos> getRandomPiecePositions() {
         ArrayList<Pos> points = new ArrayList<>();
-        for (int y = 0; y < GRID_HEIGHT; y += 2) {
-            for (int x = 0; x < GRID_WIDTH; x += 2) {
-                points.add(new Pos(x, y));
+        for (int y = 0; y < 9; ++y) {
+            for (int x = 0; x < 7; ++x) {
+                points.add(new Pos(2*x, 2*y));
             }
         }
         if (points.size() < PIECE_COUNT) {
@@ -31,35 +27,20 @@ public class HexPuzzle {
         return points;
     }
 
-    public static String encode(List<Pos> positions) {
-        int n = positions.size();
-        byte[] bytes = new byte[2*n];
-        for (int i = 0; i < n; ++i) {
-            Pos p = positions.get(i);
-            if (p.x < 0 || p.x > 255 || p.y < 0 || p.y > 255) {
-                throw new IllegalArgumentException("Position out of range");
-            }
-            bytes[2*i + 0] = (byte) p.x;
-            bytes[2*i + 1] = (byte) p.y;
-        }
-        return Base64.encodeToString(bytes, Base64.NO_WRAP);
+    public static String encode(ArrayList<Pos> positions) {
+        return StateCodec.encodePositions(positions);
     }
 
     @Nullable
     public static ArrayList<Pos> decode(String s) {
-        byte[] bytes;
+        ArrayList<Pos> positions;
         try {
-            bytes = Base64.decode(s, Base64.DEFAULT);
+            positions = StateCodec.decodePositions(s);
         } catch (IllegalArgumentException e) {
+            LogUtil.w(e, "Failed to decode state");
             return null;
         }
-        ArrayList<Pos> positions = new ArrayList<>();
-        int n = bytes.length / 2;
-        positions.ensureCapacity(n);
-        for (int i = 0; i < n; ++i) {
-            positions.add(new Pos(bytes[2*i], bytes[2*i + 1]));
-        }
-        if (!Util.validatePositions(positions, PIECE_COUNT, GRID_WIDTH, GRID_HEIGHT)) {
+        if (!Util.validatePositions(positions, PIECE_COUNT)) {
             return null;
         }
         return positions;

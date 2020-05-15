@@ -28,6 +28,7 @@ public class HexGridView extends View {
         void piecePositionsChanged(HexGridView view);
     }
 
+    private static final int GRID_PADDING = 1;
     private static final float SQRT3F = (float) Math.sqrt(3);
     private static final float MIN_ZOOM_FACTOR = 1.0f;
     private static final float MAX_ZOOM_FACTOR = 10.0f;
@@ -47,7 +48,7 @@ public class HexGridView extends View {
     private EnumMap<HexDirection, Drawable> tileOverlapErrors;
     private ScaleGestureDetector scaleGestureDetector;
 
-    private PiecePositionIndex piecePositions = new PiecePositionIndex(1, 1);
+    private PiecePositionIndex piecePositions = new PiecePositionIndex();
 
     // Current client zoom state.
     // (zoomCx, zoomCy) is the point that should be rendered at the center of the view.
@@ -146,6 +147,8 @@ public class HexGridView extends View {
         if (piecePositionsChangedListener != null) {
             piecePositionsChangedListener.piecePositionsChanged(this);
         }
+        // Grid bounding box may have changed.
+        updateDrawDimensions();
     }
 
     public ArrayList<Pos> getPiecePositions() {
@@ -165,15 +168,6 @@ public class HexGridView extends View {
         piecePositions.assign(positions);
         invalidate();
         piecePositionsChanged();
-    }
-
-    public void setGridSize(int width, int height) {
-        if (width < 1 || height < 1) {
-            throw new IllegalArgumentException("grid width and height must be positive integers");
-        }
-        piecePositions = new PiecePositionIndex(width, height, piecePositions);
-        invalidate();
-        updateDrawDimensions();
     }
 
     private void updateDrawDimensions() {
@@ -214,48 +208,43 @@ public class HexGridView extends View {
     }
 
     private void drawGridLines(Canvas canvas) {
-        final int gridWidth = piecePositions.getGridWidth();
-        final int gridHeight = piecePositions.getGridHeight();
+        final float viewWidth = drawDimensions.viewWidth;
+        final float viewHeight = drawDimensions.viewHeight;
         final float scale = drawDimensions.scale;
         final float offsetX = drawDimensions.drawOffsetX;
         final float offsetY = drawDimensions.drawOffsetY;
         Paint paint = new Paint();
-        paint.setColor(getColor(R.color.rectGridGridLines));
+        paint.setColor(getColor(R.color.hexGridGridLines));
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(0.1f * scale);
         paint.setStrokeCap(Paint.Cap.ROUND);
-        for (int q = 0; q < gridWidth; ++q) {
-            for (int r = 0; r < gridHeight; ++r) {
+
+        int minQ = (int) Math.floor((-offsetX / scale - 2.0f) / 1.5f);
+        int maxQ = (int) Math.ceil(((viewWidth - offsetX) / scale + 1.0f) / 1.5f);
+
+        int minR = (int) Math.floor(-offsetY / (scale * SQRT3F) - 1.0f);
+        int maxR = (int) Math.ceil((viewHeight - offsetY) / (scale * SQRT3F));
+
+        for (int q = minQ; q < maxQ; ++q) {
+            for (int r = minR; r < maxR; ++r) {
                 boolean even = (q % 2) == 0;
-                boolean odd = !even;
                 float cx = offsetX + scale * (1.0f + 1.5f * q);
                 float cy = offsetY + scale * SQRT3F * (even ? r + 0.5f : r + 1.0f);
 
                 // Points on hex perimeter:
                 //
-                //    1--2
-                //   /    \
+                //    1  2
+                //        \
                 //  0      3
-                //   \    /
+                //        /
                 //    5--4
-                float p0x = cx - 1.0f * scale, p0y = cy;
-                float p1x = cx - 0.5f * scale, p1y = cy - 0.5f * SQRT3F * scale;
-                float p2x = cx + 0.5f * scale, p2y = cy - 0.5f * SQRT3F * scale;
+                float p2x = cx + 0.5f * scale, p2y = cy - 0.5f * scale * SQRT3F;
                 float p3x = cx + 1.0f * scale, p3y = cy;
-                float p4x = cx + 0.5f * scale, p4y = cy + 0.5f * SQRT3F * scale;
-                float p5x = cx - 0.5f * scale, p5y = cy + 0.5f * SQRT3F * scale;
-                if (q == 0 || (r == 0 && even)) {
-                    canvas.drawLine(p0x, p0y, p1x, p1y, paint);
-                }
-                if (r == 0) {
-                    canvas.drawLine(p1x, p1y, p2x, p2y, paint);
-                }
+                float p4x = cx + 0.5f * scale, p4y = cy + 0.5f * scale * SQRT3F;
+                float p5x = cx - 0.5f * scale, p5y = cy + 0.5f * scale * SQRT3F;
                 canvas.drawLine(p2x, p2y, p3x, p3y, paint);
                 canvas.drawLine(p3x, p3y, p4x, p4y, paint);
                 canvas.drawLine(p4x, p4y, p5x, p5y, paint);
-                if (q == 0 || (r == gridHeight - 1 && odd)) {
-                    canvas.drawLine(p5x, p5y, p0x, p0y, paint);
-                }
             }
         }
     }
@@ -408,10 +397,8 @@ public class HexGridView extends View {
         Pos source = piecePositions.get(i);
         PointF origin = getFieldCenter(source.x, source.y);
         Pos destination = calculateGridPos(origin.x + deltaX, origin.y + deltaY);
-        if (piecePositions.inRange(destination)) {
-            piecePositions.moveOrSwap(i, destination);
-            piecePositionsChanged();
-        }
+        piecePositions.moveOrSwap(i, destination);
+        piecePositionsChanged();
     }
 
     @Override
@@ -539,8 +526,13 @@ public class HexGridView extends View {
         final float drawOffsetY;
 
         DrawDimensions(HexGridView view) {
-            int gridWidth = view.piecePositions.getGridWidth();
-            int gridHeight = view.piecePositions.getGridHeight();
+            Rect gridBounds = view.piecePositions.getBoundingRect();
+            gridBounds.left -= GRID_PADDING;
+            gridBounds.top -= GRID_PADDING;
+            gridBounds.right += GRID_PADDING;
+            gridBounds.bottom += GRID_PADDING;
+            int gridWidth = gridBounds.right - gridBounds.left;
+            int gridHeight = gridBounds.bottom - gridBounds.top;
             viewWidth = view.getWidth();
             viewHeight = view.getHeight();
             contentWidth = viewWidth - view.getPaddingLeft() - view.getPaddingRight();
@@ -555,8 +547,8 @@ public class HexGridView extends View {
             maxZoomCx = 1.0f - minZoomCx;
             minZoomCy = Math.min(0.5f*contentHeight / renderedPixelHeight, 0.5f);
             maxZoomCy = 1.0f - minZoomCy;
-            drawOffsetX = 0.5f * viewWidth - renderedPixelWidth * view.zoomCx;
-            drawOffsetY = 0.5f * viewHeight - renderedPixelHeight * view.zoomCy;
+            drawOffsetX = 0.5f * viewWidth - renderedPixelWidth * view.zoomCx - scale * 1.5f * gridBounds.left;
+            drawOffsetY = 0.5f * viewHeight - renderedPixelHeight * view.zoomCy - scale * SQRT3F * gridBounds.top;
         }
     }
 
@@ -565,8 +557,6 @@ public class HexGridView extends View {
     }
 
     private static class SavedState extends BaseSavedState {
-        final int gridWidth;
-        final int gridHeight;
         final List<Pos> piecePositions;
         final float zoomCx;
         final float zoomCy;
@@ -574,8 +564,6 @@ public class HexGridView extends View {
 
         public SavedState(HexGridView view, Parcelable superState) {
             super(superState);
-            gridWidth = view.piecePositions.getGridWidth();
-            gridHeight = view.piecePositions.getGridHeight();
             piecePositions = view.piecePositions.toList();
             zoomCx = view.zoomCx;
             zoomCy = view.zoomCy;
@@ -584,8 +572,6 @@ public class HexGridView extends View {
 
         public SavedState(Parcel in) {
             super(in);
-            gridWidth = in.readInt();
-            gridHeight = in.readInt();
             piecePositions = new ArrayList<>();
             in.readList(piecePositions, null);
             zoomCx = in.readFloat();
@@ -596,8 +582,6 @@ public class HexGridView extends View {
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeInt(gridWidth);
-            out.writeInt(gridHeight);
             out.writeList(piecePositions);
             out.writeFloat(zoomCx);
             out.writeFloat(zoomCy);
@@ -605,8 +589,6 @@ public class HexGridView extends View {
         }
 
         void restore(HexGridView view) {
-            // Note: these methods must be called in this order!
-            view.setGridSize(gridWidth, gridHeight);
             view.setPiecePositions(piecePositions);
 
             view.zoomFactor = zoomFactor;

@@ -1,26 +1,21 @@
 package ch.verver.chilab;
 
-import android.util.Base64;
-
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
-/**
- * Rectangular version of the (usually hexagonal) China Labyrinth puzzle.
- */
-public class RectPuzzle {
-    public static final int GRID_WIDTH = 9;
-    public static final int GRID_HEIGHT = 9;
+/** Definitions for a variant of the China Labyrinth puzzle played on a square grid. */
+abstract class RectPuzzle {
     public static final int PIECE_COUNT = 15;
 
     public static ArrayList<Pos> getRandomPiecePositions() {
         ArrayList<Pos> positions = new ArrayList<>();
-        for (int y = 0; y < GRID_HEIGHT; y += 2) {
-            for (int x = 0; x < GRID_WIDTH; x += 2) {
-                positions.add(new Pos(x, y));
+        for (int y = 0; y < 6; ++y) {
+            for (int x = 0; x < 5; ++x) {
+                if ((x + y) % 2 == 1) {
+                    positions.add(new Pos(x, y));
+                }
             }
         }
         if (positions.size() < PIECE_COUNT) {
@@ -33,34 +28,20 @@ public class RectPuzzle {
         return positions;
     }
 
-    public static String encode(List<Pos> positions) {
-        byte[] bytes = new byte[positions.size()];
-        for (int i = 0; i < bytes.length; ++i) {
-            Pos p = positions.get(i);
-            if (p.x < 0 || p.x > 15 || p.y < 0 || p.y > 15) {
-                throw new IllegalArgumentException("Position out of range");
-            }
-            bytes[i] = (byte) (p.x | (p.y << 4));
-        }
-        return Base64.encodeToString(bytes, Base64.NO_WRAP);
+    public static String encode(ArrayList<Pos> positions) {
+        return StateCodec.encodePositions(positions);
     }
 
     @Nullable
     public static ArrayList<Pos> decode(String s) {
-        byte[] bytes;
+        ArrayList<Pos> positions;
         try {
-            bytes = Base64.decode(s, Base64.DEFAULT);
+            positions = StateCodec.decodePositions(s);
         } catch (IllegalArgumentException e) {
+            LogUtil.w(e, "Failed to decode state");
             return null;
         }
-        ArrayList<Pos> positions = new ArrayList<>();
-        positions.ensureCapacity(bytes.length);
-        for (byte b : bytes) {
-            int x = b & 0xf;
-            int y = (b >> 4) & 0xf;
-            positions.add(new Pos(x, y));
-        }
-        if (!Util.validatePositions(positions, PIECE_COUNT, GRID_WIDTH, GRID_HEIGHT)) {
+        if (!Util.validatePositions(positions, PIECE_COUNT)) {
             return null;
         }
         return positions;

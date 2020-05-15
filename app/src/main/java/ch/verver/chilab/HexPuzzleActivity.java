@@ -22,7 +22,6 @@ public class HexPuzzleActivity extends AppCompatActivity {
         hexGridView = findViewById(R.id.hex_grid_view);
 
         if (savedInstanceState == null) {
-            hexGridView.setGridSize(HexPuzzle.GRID_WIDTH, HexPuzzle.GRID_HEIGHT);
             hexGridView.setPiecePositions(restorePiecePositions());
         }
 
