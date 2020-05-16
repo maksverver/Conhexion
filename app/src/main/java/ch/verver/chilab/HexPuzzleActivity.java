@@ -1,11 +1,14 @@
 package ch.verver.chilab;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 
@@ -36,6 +39,22 @@ public class HexPuzzleActivity extends AppCompatActivity {
                         recalculateVictoryConditions(piecePositions);
                     }
                 });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.hex_actions, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.switch_to_rect_puzzle:
+                startActivity(new Intent(this, RectPuzzleActivity.class));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private ArrayList<Pos> restorePiecePositions() {
