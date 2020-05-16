@@ -4,10 +4,8 @@
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
 
-    <color name="rectGridBackground">#000000</color>
+    <color name="gridBackground">#000000</color>
     <color name="rectGridGridLines">#303030</color>
-
-    <color name="hexGridGridBackground">#000000</color>
     <color name="hexGridGridLines">#303030</color>
 
     <!-- maybe todo: colors used by for vector drawables? -->

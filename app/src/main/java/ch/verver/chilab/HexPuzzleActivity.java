@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import java.util.ArrayList;
 
+// Deprecated! TODO: remove this class once MainActivity works properly.
 public class HexPuzzleActivity extends AppCompatActivity {
 
     public static final String INTENT_EXTRA_HEX_PIECES = "hex-pieces";

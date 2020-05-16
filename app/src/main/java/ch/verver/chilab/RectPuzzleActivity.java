@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import java.util.ArrayList;
 
+// Deprecated! TODO: remove this class once MainActivity works properly.
 public class RectPuzzleActivity extends AppCompatActivity {
 
     public static final String INTENT_EXTRA_RECT_PIECES = "rect-pieces";

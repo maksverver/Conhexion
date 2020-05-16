@@ -160,10 +160,6 @@ public class HexGridView extends View {
     }
 
     public void setPiecePositions(List<Pos> positions) {
-        if (positions.size() != HexPuzzle.PIECE_COUNT) {
-            throw new IllegalArgumentException();
-        }
-
         cancelDrag();
         piecePositions.assign(positions);
         invalidate();

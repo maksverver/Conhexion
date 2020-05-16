@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import static android.content.Context.MODE_PRIVATE;
 
+// TODO: remove this class after removing the deprecated RectPuzzleActivity and HexPuzzleActivity
 class Preferences {
     public static final String SHARED_PREFERENCES_NAME = "main-prefs";
     public static final String RECT_PIECES_KEY = "rect-pieces";

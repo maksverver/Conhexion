@@ -136,9 +136,6 @@ public class RectGridView extends View {
     }
 
     public void setPiecePositions(List<Pos> positions) {
-        if (positions.size() != RectPuzzle.PIECE_COUNT) {
-            throw new IllegalArgumentException();
-        }
         cancelDrag();
         piecePositionIndex.assign(positions);
         invalidate();
