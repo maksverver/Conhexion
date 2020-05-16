@@ -29,11 +29,11 @@ public class HexPuzzleActivity extends AppCompatActivity {
                 new HexGridView.PiecePositionsChangedListener() {
                     @Override
                     public void piecePositionsChanged(HexGridView view) {
-                        ArrayList<Pos> piecePositions = view.getPiecePositions();
+                        PiecePositionIndex piecePositions = view.getPiecePositionIndex();
                         // Debug-print base-64 encoded piece positions. Can be restored with e.g.:
                         // adb shell am start-activity --es hex-pieces XXX ch.verver.chilab/.HexPuzzleActivity
-                        LogUtil.i("hex-pieces %s", HexPuzzle.encode(piecePositions));
-                        // TODO: recalculateVictoryConditions();
+                        LogUtil.i("hex-pieces %s", HexPuzzle.encode(piecePositions.toList()));
+                        recalculateVictoryConditions(piecePositions);
                     }
                 });
     }
@@ -104,5 +104,13 @@ public class HexPuzzleActivity extends AppCompatActivity {
             return null;
         }
         return positions;
+    }
+
+    private void recalculateVictoryConditions(PiecePositionIndex piecePositionIndex) {
+        Solution.Progress progress =
+                Solution.calculateProgress(piecePositionIndex, HexDirection.values());
+        LogUtil.i("groupCount=%d  unconnectedPathCount=%d  connectedBackCount=%d  solved=%s",
+                progress.getGroupCount(), progress.getDisconnectionCount(),
+                progress.getOverlapCount(), progress.isSolved());
     }
 }

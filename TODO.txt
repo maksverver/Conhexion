@@ -1,11 +1,13 @@
+ - Support long click to move connected groups (use ColorFilter to show selected tiles?)
+ - Unify zooming / panning / dragging behavior across views?
  - Better launcher icon
- - Hex game victory conditions
  - Tutorial page(s) that you can swipe through.
     This puzzle has only three simple rules:
     (1) "Paths" must connect
     (2) "Backsides" must not touch/overlap
     (3) Connect all pieces into a single group
     Hint: don't create loops?
+    Hint: you can pinch to zoom, drag to pan, long-press to move a group?
  - App menu:
      - option to show tutorial
      - option to reset current puzzle (confirm!)

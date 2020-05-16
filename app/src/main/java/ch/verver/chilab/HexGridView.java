@@ -315,7 +315,7 @@ public class HexGridView extends View {
         zoomFactor = clamp(newZoomFactor, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
         updateDrawDimensions();  // must be called before setZoomCenter()!
         setZoomCenter(zoomCx, zoomCy);
-        HexGridView.this.invalidate();
+        invalidate();
     }
 
     /** Moves the view by (x, y), measured in pixels. */
@@ -329,7 +329,7 @@ public class HexGridView extends View {
         zoomCx = clamp(cx, drawDimensions.minZoomCx, drawDimensions.maxZoomCx);
         zoomCy = clamp(cy, drawDimensions.minZoomCy, drawDimensions.maxZoomCy);
         updateDrawDimensions();
-        HexGridView.this.invalidate();
+        invalidate();
     }
 
     private Pos calculateGridPos(float pixelX, float pixelY) {
