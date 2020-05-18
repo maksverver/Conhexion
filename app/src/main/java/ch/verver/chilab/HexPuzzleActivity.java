@@ -30,9 +30,9 @@ public class HexPuzzleActivity extends AppCompatActivity {
         }
 
         hexGridView.setPiecePositionsChangedListener(
-                new HexGridView.PiecePositionsChangedListener() {
+                new HexPiecePositionsChangedListener() {
                     @Override
-                    public void piecePositionsChanged(HexGridView view) {
+                    public void hexPiecePositionsChanged(HexGridView view) {
                         PiecePositionIndex piecePositions = view.getPiecePositionIndex();
                         // Debug-print base-64 encoded piece positions. Can be restored with e.g.:
                         // adb shell am start-activity --es hex-pieces XXX ch.verver.chilab/.HexPuzzleActivity
@@ -50,10 +50,9 @@ public class HexPuzzleActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.switch_to_rect_puzzle:
-                startActivity(new Intent(this, RectPuzzleActivity.class));
-                return true;
+        if (item.getItemId() == R.id.switch_to_rect_puzzle) {
+            startActivity(new Intent(this, RectPuzzleActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -96,7 +95,7 @@ public class HexPuzzleActivity extends AppCompatActivity {
                 .putString(
                         Preferences.HEX_PIECES_KEY,
                         HexPuzzle.encode(hexGridView.getPiecePositions()))
-                .commit();
+                .apply();
     }
 
     @Override

@@ -17,8 +17,8 @@ public class RectPuzzleFragment extends Fragment {
         RectGridView rectGridView = view.findViewById(R.id.rect_grid_view);
         rectGridView.setPiecePositions(App.getAppState().getRectPuzzlePiecePositions());
         FragmentActivity activity = getActivity();
-        if (activity instanceof RectGridView.PiecePositionsChangedListener) {
-            rectGridView.setPiecePositionsChangedListener((RectGridView.PiecePositionsChangedListener) activity);
+        if (activity instanceof RectPiecePositionsChangedListener) {
+            rectGridView.setRectPiecePositionsChangedListener((RectPiecePositionsChangedListener) activity);
         }
         return view;
     }

@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity implements HexGridView.PiecePositionsChangedListener, RectGridView.PiecePositionsChangedListener {
+public class MainActivity extends AppCompatActivity implements HexPiecePositionsChangedListener, RectPiecePositionsChangedListener {
 
     private AppState appState;
     private RectPuzzleFragment rectPuzzleFragment;
@@ -86,13 +86,13 @@ public class MainActivity extends AppCompatActivity implements HexGridView.Piece
     }
 
     @Override
-    public void piecePositionsChanged(RectGridView view) {
+    public void rectPiecePositionsChanged(RectGridView view) {
         appState.setRectPuzzlePiecePositions(view.getPiecePositions());
         // TODO: recalculate victory conditions
     }
 
     @Override
-    public void piecePositionsChanged(HexGridView view) {
+    public void hexPiecePositionsChanged(HexGridView view) {
         appState.setHexPuzzlePiecePositions(view.getPiecePositions());
         // TODO: recalculate victory conditions
     }

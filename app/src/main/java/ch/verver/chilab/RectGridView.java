@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RectGridView extends View {
-    public interface PiecePositionsChangedListener {
-        void piecePositionsChanged(RectGridView view);
-    }
 
     /**
      * Number of padding squares to add around the bounding box of the pieces. This should be
@@ -47,7 +44,7 @@ public class RectGridView extends View {
 
     @Nullable private DragState dragState = null;
 
-    @Nullable private PiecePositionsChangedListener piecePositionsChangedListener = null;
+    @Nullable private RectPiecePositionsChangedListener rectPiecePositionsChangedListener = null;
 
     public RectGridView(Context context) {
         super(context);
@@ -355,13 +352,13 @@ public class RectGridView extends View {
         return true;
     }
 
-    public void setPiecePositionsChangedListener(@Nullable PiecePositionsChangedListener piecePositionsChangedListener) {
-        this.piecePositionsChangedListener = piecePositionsChangedListener;
+    public void setRectPiecePositionsChangedListener(@Nullable RectPiecePositionsChangedListener rectPiecePositionsChangedListener) {
+        this.rectPiecePositionsChangedListener = rectPiecePositionsChangedListener;
     }
 
     private void piecePositionsChanged() {
-        if (piecePositionsChangedListener != null) {
-            piecePositionsChangedListener.piecePositionsChanged(this);
+        if (rectPiecePositionsChangedListener != null) {
+            rectPiecePositionsChangedListener.rectPiecePositionsChanged(this);
         }
         updateDrawDimensions();  // bounding rect may have changed
     }

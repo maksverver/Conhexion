@@ -17,8 +17,8 @@ public class HexPuzzleFragment extends Fragment {
         HexGridView hexGridView = view.findViewById(R.id.hex_grid_view);
         hexGridView.setPiecePositions(App.getAppState().getHexPuzzlePiecePositions());
         FragmentActivity activity = getActivity();
-        if (activity instanceof HexGridView.PiecePositionsChangedListener) {
-            hexGridView.setPiecePositionsChangedListener((HexGridView.PiecePositionsChangedListener) activity);
+        if (activity instanceof HexPiecePositionsChangedListener) {
+            hexGridView.setPiecePositionsChangedListener((HexPiecePositionsChangedListener) activity);
         }
         return view;
     }
