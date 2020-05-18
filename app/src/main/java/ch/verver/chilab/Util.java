@@ -1,5 +1,6 @@
 package ch.verver.chilab;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,23 +10,21 @@ abstract class Util {
     /**
      * Checks that a list of positions is a valid puzzle piece configuration.
      *
-     * <p>Specifically, this verifies that:</p>
-     * <ol>
-     *     <li>{@code positions} contains exactly {@code count} elements.</li>
-     *     <li>Each position x-coordinate is between 0 and {@code width} (exclusive).</li>
-     *     <li>Each position y-coordinate is between 0 and {@code height} (exclusive).</li>
-     *     <li>All positions are distinct.</li>
-     * </ol>
-     *
-     * @return true if all of the above properties hold, false otherwise
+     * <p>Specifically, verifies that {@code positions} contains exactly {@code count} elements, and
+     * that all positions are distinct.
      */
     static boolean validatePositions(List<Pos> positions, int count) {
-        if (positions.size() != count) {
-            return false;
-        }
-        Set<Pos> seen = new HashSet<>();
-        for (Pos p : positions) {
-            if (!seen.add(p)) {
+        return positions.size() == count && allDistinct(positions);
+    }
+
+    /**
+     * Returns whether all elements in the collection are distinct. Requires that values implement
+     * {@link Object#equals(Object)} and {@link Object#hashCode()} correctly.
+     */
+    static boolean allDistinct(Collection<?> elements) {
+        Set<Object> seen = new HashSet<>();
+        for (Object o : elements) {
+            if (!seen.add(o)) {
                 return false;
             }
         }
