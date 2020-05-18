@@ -29,7 +29,7 @@ public class RectPuzzleActivity extends AppCompatActivity {
             rectGridView.setPiecePositions(restorePiecePositions());
         }
 
-        rectGridView.setRectPiecePositionsChangedListener(
+        rectGridView.setPiecePositionsChangedListener(
                 new RectPiecePositionsChangedListener() {
                     @Override
                     public void rectPiecePositionsChanged(RectGridView view) {

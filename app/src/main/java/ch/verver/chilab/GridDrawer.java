@@ -20,7 +20,7 @@ interface GridDrawer {
     Pos calculateGridPos(DrawDimensions drawDimensions, float pixelX, float pixelY);
 
     /** Gets the pixel coordinates of the center of the field at the given grid coordinates. */
-    PointF calculateFieldCenter(DrawDimensions drawDimensions, int x, int y);
+    PointF calculateFieldCenter(DrawDimensions drawDimensions, int gridX, int gridY);
 
     /**
      * Recalculates the draw dimensions for the grid, given the current zoom state.

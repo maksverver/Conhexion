@@ -206,11 +206,11 @@ class HexGridDrawer implements GridDrawer {
         }
     }
 
-    private Rect getTileBounds(DrawDimensions drawDimensions, Pos pos) {
+    private static Rect getTileBounds(DrawDimensions drawDimensions, Pos pos) {
         return getTileBounds(drawDimensions, pos, 0.0f, 0.0f);
     }
 
-    private Rect getTileBounds(DrawDimensions drawDimensions, Pos pos, float offsetX, float offsetY) {
+    private static Rect getTileBounds(DrawDimensions drawDimensions, Pos pos, float offsetX, float offsetY) {
         int q = pos.x;
         int r = pos.y;
 

@@ -39,5 +39,4 @@ public class HexGridView extends BaseGridView {
             delegate.hexPiecePositionsChanged((HexGridView) baseGridView);
         }
     }
-
 }
