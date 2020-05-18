@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -39,18 +40,22 @@ abstract class BaseGridView extends View {
     // Current bounding box of piece positions. Updated whenever piece positions change.
     private Rect gridBounds = piecePositions.getBoundingRect();
 
-    // Current client zoom state.
-    // (zoomCx, zoomCy) is the point that should be rendered at the center of the view.
-    private float zoomCx = 0.5f;  // between 0 and 1
-    private float zoomCy = 0.5f;  // between 0 and 1
-    private float zoomFactor = MIN_ZOOM_FACTOR;
-
-    // Current viewport. Recalculated in onSizeChanged().
-    private ViewPort viewPort = null;
+    // Current grid canvas size. Updated whenever piece positions change.
+    private RectF canvasBounds;
 
     // Current draw dimensions. Depends on view dimensions (width, height, padding) and zoom state,
     // and should be recalculated on change.
     private DrawDimensions drawDimensions = null;
+
+    // Current bounds on the zoom center. Recalculated whenever DrawDimensions change.
+    // `left` and `top` must be between 0 and 0.5. `top` and `right` must be between 0.5 and 1.
+    private RectF zoomCenterBounds = new RectF(0.5f, 0.5f, 0.5f, 0.5f);
+
+    // Current client zoom state.
+    // (zoomCx, zoomCy) is the point that should be rendered at the center of the view.
+    private float zoomCx = 0.5f;  // between zoomCenterBounds.left and zoomCenterBounds.right
+    private float zoomCy = 0.5f;  // between zoomCenterBounds.top and zoomCenterBounds.bottom
+    private float zoomFactor = MIN_ZOOM_FACTOR;
 
     // Current drag state. null when nothing is being dragged.
     @Nullable private DragState dragState = null;
@@ -66,24 +71,32 @@ abstract class BaseGridView extends View {
         super(context);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
+        init();
     }
 
     public BaseGridView(Context context, GridDrawer gridDrawer, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
+        init();
     }
 
     public BaseGridView(Context context, GridDrawer gridDrawer, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
+        init();
     }
 
     public BaseGridView(Context context, GridDrawer gridDrawer, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
+        init();
+    }
+
+    private void init() {
+        updateCanvasBounds();
     }
 
     public ArrayList<Pos> getPiecePositions() {
@@ -120,7 +133,6 @@ abstract class BaseGridView extends View {
 
     @Override
     final protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        viewPort = new ViewPort(this);
         cancelDrag();
         updateDrawDimensions();
         setZoomCenter(zoomCx, zoomCy);
@@ -173,7 +185,17 @@ abstract class BaseGridView extends View {
 
         // Grid bounding box has changed!
         this.gridBounds = newGridBounds;
+        updateCanvasBounds();
         updateDrawDimensions();
+    }
+
+    private void updateCanvasBounds() {
+        Rect paddedGridBounds = new Rect(gridBounds);
+        paddedGridBounds.left -= GRID_PADDING;
+        paddedGridBounds.top -= GRID_PADDING;
+        paddedGridBounds.right += GRID_PADDING;
+        paddedGridBounds.bottom += GRID_PADDING;
+        this.canvasBounds = gridDrawer.calculateCanvasBounds(paddedGridBounds);
     }
 
     /** Returns the zero-based index of the piece at the given pixel coordinates, or -1 if none.*/
@@ -194,24 +216,34 @@ abstract class BaseGridView extends View {
     }
 
     private void updateDrawDimensions() {
-        if (viewPort == null) {
+        int viewWidth = getWidth();
+        int viewHeight = getHeight();
+        if (viewWidth == 0 && viewHeight == 0) {
             LogUtil.i("Cannot update draw dimensions; viewport has not been calculated yet.");
             return;
         }
-        if (viewPort.contentWidth <= 0 || viewPort.contentHeight <= 0) {
-            LogUtil.e("Invalid viewport size: %s", viewPort);
+        int contentWidth = viewWidth - getPaddingLeft() - getPaddingRight();
+        int contentHeight = viewHeight - getPaddingTop() - getPaddingBottom();
+        if (contentWidth <= 0 || contentHeight <= 0) {
+            LogUtil.e("Invalid content area size: %dx%d", contentWidth, contentHeight);
             return;
         }
-
-        // Note: paddedGridBounds is recreated each time, because Rect is a mutable type, so we
-        // cannot reuse the instance after passing it to calculateDrawDimensions() below.
-        Rect paddedGridBounds = new Rect(gridBounds);
-        paddedGridBounds.left -= GRID_PADDING;
-        paddedGridBounds.top -= GRID_PADDING;
-        paddedGridBounds.right += GRID_PADDING;
-        paddedGridBounds.bottom += GRID_PADDING;
-        drawDimensions = gridDrawer.calculateDrawDimensions(
-                viewPort, paddedGridBounds, zoomFactor, zoomCx, zoomCy);
+        float scaleToFit = Math.min(
+            contentWidth / canvasBounds.width(),
+            contentHeight / canvasBounds.height());
+        float scale = scaleToFit * zoomFactor;
+        float renderedPixelWidth = scale * canvasBounds.width();
+        float renderedPixelHeight = scale * canvasBounds.height();
+        float drawOffsetX = getPaddingLeft() + 0.5f * contentWidth
+                - renderedPixelWidth * zoomCx - scale * canvasBounds.left;
+        float drawOffsetY = getPaddingTop() + 0.5f * contentHeight
+                - renderedPixelHeight * zoomCy - scale * canvasBounds.top;
+        drawDimensions = new DrawDimensions(scale, drawOffsetX, drawOffsetY);
+        float minZoomCx = Math.min(0.5f * contentWidth / renderedPixelWidth, 0.5f);
+        float maxZoomCx = 1.0f - minZoomCx;
+        float minZoomCy = Math.min(0.5f * contentHeight / renderedPixelHeight, 0.5f);
+        float maxZoomCy = 1.0f - minZoomCy;
+        zoomCenterBounds = new RectF(minZoomCx, minZoomCy, maxZoomCx, maxZoomCy);
     }
 
     private void setZoomFactor(float newZoomFactor) {
@@ -224,13 +256,13 @@ abstract class BaseGridView extends View {
     /** Moves the view by (x, y), measured in pixels. */
     private void dragViewBy(float deltaX, float deltaY) {
         setZoomCenter(
-                zoomCx - deltaX / drawDimensions.renderedPixelWidth,
-                zoomCy - deltaY / drawDimensions.renderedPixelHeight);
+                zoomCx - deltaX / (drawDimensions.scale * canvasBounds.width()),
+                zoomCy - deltaY / (drawDimensions.scale * canvasBounds.height()));
     }
 
     private void setZoomCenter(float cx, float cy) {
-        zoomCx = clamp(cx, drawDimensions.minZoomCx, drawDimensions.maxZoomCx);
-        zoomCy = clamp(cy, drawDimensions.minZoomCy, drawDimensions.maxZoomCy);
+        zoomCx = clamp(cx, zoomCenterBounds.left, zoomCenterBounds.right);
+        zoomCy = clamp(cy, zoomCenterBounds.top, zoomCenterBounds.bottom);
         updateDrawDimensions();
         invalidate();
     }

@@ -1,19 +1,27 @@
- - Support long click to move connected groups (use ColorFilter to show selected tiles?)
- - Unify zooming / panning / dragging behavior across views?
- - Better launcher icon
- - Tutorial page(s) that you can swipe through.
+  - AppState: allow overriding state with intent (as with RectPuzzleActivity and HexPuzzleActivity)
+  - Support long click to move connected groups (use ColorFilter to show selected tiles?)
+  - Better launcher icon
+  - Tutorial page(s) that you can swipe through.
     This puzzle has only three simple rules:
     (1) "Paths" must connect
     (2) "Backsides" must not touch/overlap
     (3) Connect all pieces into a single group
     Hint: don't create loops?
     Hint: you can pinch to zoom, drag to pan, long-press to move a group?
- - App menu:
-     - option to show tutorial
-     - option to reset current puzzle (confirm!)
-     - option to switch between rect/hex game
- - Victory animation after solving!
+  - App menu:
+      - option to show tutorial
+      - option to reset current puzzle (confirm!)
+      - option to switch between rect/hex game
+  - Victory animation after solving!
+      - solving rect puzzle should get you towards hex puzzle
+      - solving hex puzzle should allow you to reset it
+
+Cleanup:
+  - Remove old HexPuzzleActivity and RectPuzzleActivity
+  - Remove old SharedPreferences
+  - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?
 
 Stretch goals:
+  - Fancy fragment transition animations
   - Light/dark mode
   - Ability to name & upload your solution

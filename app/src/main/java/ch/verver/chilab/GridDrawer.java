@@ -3,6 +3,7 @@ package ch.verver.chilab;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 /**
  * Interface of classes that know how to draw a grid with puzzle pieces, and can translate
@@ -13,7 +14,6 @@ import android.graphics.Rect;
  *
  * @see BaseGridView
  * @see DrawDimensions
- * @see ViewPort
  */
 interface GridDrawer {
     /** Returns the grid position corresponding with the given pixel coordinates. */
@@ -23,20 +23,10 @@ interface GridDrawer {
     PointF calculateFieldCenter(DrawDimensions drawDimensions, int gridX, int gridY);
 
     /**
-     * Recalculates the draw dimensions for the grid, given the current zoom state.
-     *
-     * @param viewPort dimensions of the view port to draw in
-     * @param gridBounds bounding box of the pieces on the grid
-     * @param zoomFactor the current zoom factor, as a multiplier of the draw scale when the grid
-     *                   is zoomed to fit the view; between 1 (zoomed out) and 10 (zoomed in)
-     * @param zoomCx x-coordinate of the zoom center; between the {@link DrawDimensions#minZoomCx}
-     *               and {@link DrawDimensions#maxZoomCx} of the previous draw dimensions
-     * @param zoomCy y-coordinate of the zoom center; between the {@link DrawDimensions#minZoomCy}
-     *               and {@link DrawDimensions#maxZoomCy} of the previous draw dimensions
-     * @return the new draw dimensions for the current view size, piece positions, and zoom state
+     * Calculates the canvas bounds for the given grid bounds. The canvas bounds are the bounds of
+     * the grid when drawn at unit size.
      */
-    DrawDimensions calculateDrawDimensions(
-            ViewPort viewPort, Rect gridBounds, float zoomFactor, float zoomCx, float zoomCy);
+    RectF calculateCanvasBounds(Rect gridBounds);
 
     /**
      * Draws the current grid and pieces.

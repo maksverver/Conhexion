@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
@@ -122,27 +123,13 @@ class HexGridDrawer implements GridDrawer {
     }
 
     @Override
-    public DrawDimensions calculateDrawDimensions(ViewPort viewPort, Rect gridBounds, float zoomFactor, float zoomCx, float zoomCy) {
-        int gridWidth = gridBounds.right - gridBounds.left;
-        int gridHeight = gridBounds.bottom - gridBounds.top;
+    public RectF calculateCanvasBounds(Rect gridBounds) {
         // Size of the bounding box of the grid, if hexagons are rendered with side length 1.
-        float renderedWidth = 0.5f + 1.5f * gridWidth;
-        float renderedHeight = SQRT3F * (gridHeight + (gridWidth > 1 ? 0.5f : 0.0f));
-        // Maximal zoom factor so that rendered content fits the content area
-        float zoomToFit = Math.min(viewPort.contentWidth/renderedWidth, viewPort.contentHeight/renderedHeight);
-        float scale = zoomToFit * zoomFactor;
-        float renderedPixelWidth = scale * renderedWidth;
-        float renderedPixelHeight = scale * renderedHeight;
-        float minZoomCx = Math.min(0.5f * viewPort.contentWidth / renderedPixelWidth, 0.5f);
-        float maxZoomCx = 1.0f - minZoomCx;
-        float minZoomCy = Math.min(0.5f * viewPort.contentHeight / renderedPixelHeight, 0.5f);
-        float maxZoomCy = 1.0f - minZoomCy;
-        float drawOffsetX = viewPort.paddingLeft + 0.5f * viewPort.contentWidth
-                - renderedPixelWidth * zoomCx - scale * 1.5f * gridBounds.left;
-        float drawOffsetY = viewPort.paddingTop + 0.5f * viewPort.contentHeight
-                - renderedPixelHeight * zoomCy - scale * SQRT3F * gridBounds.top;
-        return new DrawDimensions(scale, renderedPixelWidth, renderedPixelHeight,
-                minZoomCx, maxZoomCx, minZoomCy, maxZoomCy, drawOffsetX, drawOffsetY);
+        float left = 1.5f * gridBounds.left;
+        float top = SQRT3F * gridBounds.top;
+        float right = 1.5f * gridBounds.right + 0.5f;
+        float bottom = SQRT3F * (gridBounds.bottom + 0.5f);
+        return new RectF(left, top, right, bottom);
     }
 
     @Override

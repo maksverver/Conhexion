@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
@@ -68,31 +69,8 @@ class RectGridDrawer implements GridDrawer {
     }
 
     @Override
-    public DrawDimensions calculateDrawDimensions(ViewPort viewPort, Rect gridBounds, float zoomFactor, float zoomCx, float zoomCy) {
-        int gridWidth = gridBounds.width();
-        int gridHeight = gridBounds.height();
-        int usedWidth = Math.min(viewPort.contentWidth, viewPort.contentHeight * gridWidth / gridHeight);
-        int usedHeight = Math.min(viewPort.contentHeight, viewPort.contentWidth * gridHeight / gridWidth);
-        float zoomToFit = Math.min(
-                (float) viewPort.contentWidth / gridWidth,
-                (float) viewPort.contentHeight / gridHeight);
-        float drawScale = zoomToFit * zoomFactor;
-
-        float renderedPixelWidth = drawScale * gridWidth;
-        float renderedPixelHeight = drawScale * gridHeight;
-
-        float drawOffsetX = viewPort.paddingLeft + viewPort.contentWidth / 2
-                - drawScale * gridWidth * zoomCx - gridBounds.left * drawScale;
-        float drawOffsetY = viewPort.paddingTop + viewPort.contentHeight / 2
-                - drawScale * gridHeight * zoomCy - gridBounds.top * drawScale;
-
-        float minZoomCx = Math.min(0.5f * viewPort.contentWidth / renderedPixelWidth, 0.5f);
-        float maxZoomCx = 1.0f - minZoomCx;
-        float minZoomCy = Math.min(0.5f * viewPort.contentHeight / renderedPixelHeight, 0.5f);
-        float maxZoomCy = 1.0f - minZoomCy;
-
-        return new DrawDimensions(drawScale, usedWidth, usedHeight,
-                minZoomCx, maxZoomCx, minZoomCy, maxZoomCy, drawOffsetX, drawOffsetY);
+    public RectF calculateCanvasBounds(Rect gridBounds) {
+        return new RectF(gridBounds);
     }
 
     @Override
