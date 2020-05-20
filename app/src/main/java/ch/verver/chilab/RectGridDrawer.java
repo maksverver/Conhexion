@@ -3,6 +3,7 @@ package ch.verver.chilab;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -55,6 +56,11 @@ class RectGridDrawer implements GridDrawer {
     }
 
     @Override
+    public Direction[] getConnectionDirections() {
+        return RectDirection.values();
+    }
+
+    @Override
     public Pos calculateGridPos(DrawDimensions drawDimensions, float pixelX, float pixelY) {
         return new Pos(
                 (int) Math.floor(pixelToGridX(drawDimensions, pixelX)),
@@ -75,41 +81,50 @@ class RectGridDrawer implements GridDrawer {
 
     @Override
     public void draw(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
-                     int draggedPieceIndex, float dragDeltaX, float dragDeltaY) {
-         drawGridLines(canvas, drawDimensions);
+                     long draggedPieces, float dragDeltaX, float dragDeltaY) {
+        drawGridLines(canvas, drawDimensions);
+
+        final int n = piecePositions.size();
 
         // Draw pieces
-        for (int i = 0; i < piecePositions.size(); ++i) {
-            if (i != draggedPieceIndex) {
+        for (int i = 0; i < n; ++i) {
+            if (!Util.isDragged(draggedPieces, i)) {
                 Pos pos = piecePositions.get(i);
-                drawPiece(canvas, drawDimensions, i, pos.x, pos.y);
+                drawPiece(canvas, drawDimensions, i, pos.x, pos.y, 0.0f, 0.0f, null);
             }
         }
 
         // Draw overlap errors
-        for (int i = 0; i < piecePositions.size(); ++i) {
+        for (int i = 0; i < n; ++i) {
             Pos pos = piecePositions.get(i);
-            if (i != draggedPieceIndex) {
+            if (!Util.isDragged(draggedPieces, i)) {
                 int j = piecePositions.indexOf(pos.x - 1, pos.y);
-                if (j != -1 && j != draggedPieceIndex &&
+                if (j != -1 && !Util.isDragged(draggedPieces, j) &&
                         (!RectDirection.LEFT.hasPath(i) || !RectDirection.RIGHT.hasPath(j))) {
                     drawDrawable(canvas, drawDimensions, overlapVertiDrawable,
-                            pos.x - 0.25f, pos.y, pos.x + 0.25f, pos.y + 1.0f);
+                            pos.x - 0.25f, (float) pos.y, pos.x + 0.25f, pos.y + 1.0f,
+                            0.0f, 0.0f, null);
                 }
 
                 j = piecePositions.indexOf(pos.x, pos.y - 1);
-                if (j != -1 && j != draggedPieceIndex &&
+                if (j != -1 && !Util.isDragged(draggedPieces, i) &&
                         (!RectDirection.UP.hasPath(i) || !RectDirection.DOWN.hasPath(j))) {
                     drawDrawable(canvas, drawDimensions, overlapHorizDrawable,
-                            pos.x, pos.y - 0.25f, pos.x + 1.0f, pos.y + 0.25f);
+                            pos.x, pos.y - 0.25f, pos.x + 1.0f, pos.y + 0.25f,
+                            0.0f, 0.0f, null);
                 }
             }
         }
 
-        // Draw dragged piece last to ensure it is displayed on top!
-        if (draggedPieceIndex != -1) {
-            Pos pos = piecePositions.get(draggedPieceIndex);
-            drawPiece(canvas, drawDimensions, draggedPieceIndex, pos.x, pos.y, dragDeltaX, dragDeltaY);
+        // Draw dragged pieces last, to ensure they are displayed on top!
+        if (draggedPieces != 0) {
+            ColorFilter colorFilter = Util.isMultiDrag(draggedPieces) ? ColorFilters.NEGATIVE : null;
+            for (int i = 0; i < n; ++i) {
+                if (Util.isDragged(draggedPieces, i)) {
+                    Pos pos = piecePositions.get(i);
+                    drawPiece(canvas, drawDimensions, i, pos.x, pos.y, dragDeltaX, dragDeltaY, colorFilter);
+                }
+            }
         }
     }
 
@@ -136,17 +151,15 @@ class RectGridDrawer implements GridDrawer {
         }
     }
 
-    private void drawPiece(Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, int gridX, int gridY) {
-        drawPiece(canvas, drawDimensions, pieceIndex, gridX, gridY, 0.0f, 0.0f);
-    }
-
-    private void drawPiece(Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, int gridX, int gridY, float pixelOffsetX, float pixelOffsetY) {
+    private void drawPiece(
+            Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, int gridX, int gridY,
+            float pixelOffsetX, float pixelOffsetY, @Nullable ColorFilter colorFilter) {
         if (pieceIndex >= 0 && pieceIndex < pieceDrawables.length) {
             Drawable pieceDrawable = pieceDrawables[pieceIndex];
             if (pieceDrawable != null) {
                 drawDrawable(canvas, drawDimensions, pieceDrawable,
                         gridX - 0.5f, gridY - 0.5f, gridX + 1.5f, gridY + 1.5f,
-                        pixelOffsetX, pixelOffsetY);
+                        pixelOffsetX, pixelOffsetY, colorFilter);
                 return;
             }
         }
@@ -160,19 +173,16 @@ class RectGridDrawer implements GridDrawer {
                 opaquePaint);
     }
 
-    private static void drawDrawable(Canvas canvas, DrawDimensions drawDimensions, Drawable drawable,
-            float gridLeft, float gridTop, float gridRight, float gridBottom) {
-        drawDrawable(canvas, drawDimensions, drawable, gridLeft, gridTop, gridRight, gridBottom, 0.0f, 0.0f);
-    }
-
-    private static void drawDrawable(Canvas canvas, DrawDimensions drawDimensions, Drawable drawable,
-            float gridLeft, float gridTop, float gridRight, float gridBottom,
-             float pixelOffsetX, float pixelOffsetY) {
+    private static void drawDrawable(
+            Canvas canvas, DrawDimensions drawDimensions, Drawable drawable,
+             float gridLeft, float gridTop, float gridRight, float gridBottom,
+             float pixelOffsetX, float pixelOffsetY, @Nullable ColorFilter colorFilter) {
         drawable.setBounds(
                 Math.round(gridToPixelX(drawDimensions, gridLeft) + pixelOffsetX),
                 Math.round(gridToPixelY(drawDimensions, gridTop) + pixelOffsetY),
                 Math.round(gridToPixelX(drawDimensions, gridRight) + pixelOffsetX),
                 Math.round(gridToPixelY(drawDimensions, gridBottom) + pixelOffsetY));
+        drawable.setColorFilter(colorFilter);
         drawable.draw(canvas);
     }
 

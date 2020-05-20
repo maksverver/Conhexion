@@ -5,12 +5,14 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import androidx.annotation.Nullable;
 
@@ -30,12 +32,19 @@ abstract class BaseGridView extends View {
     private static final float MIN_ZOOM_FACTOR = 1.0f;
     private static final float MAX_ZOOM_FACTOR = 10.0f;
 
+    // You can long-press on a piece to select the whole connected group for dragging (instead of
+    // moving just a single piece). However, we ignore the long-press if the first piece has been
+    // moved by more than `scale * LONG_PRESS_MAX_MOVEMENT` pixels, i.e., 35% of a grid canvas unit.
+    // This allows users to move a single piece out of a group by quickly dragging it away.
+    private static final float LONG_PRESS_MAX_MOVEMENT = 0.35f;
+
+    private final Handler handler = new Handler();
     private final GridDrawer gridDrawer;
     private final ScaleGestureDetector scaleGestureDetector;
 
     // Current piece positions
-    private PiecePositionIndex piecePositions = new PiecePositionIndex();
-    private ReadonlyPiecePositionIndex readonlyPiecePositions = piecePositions.readonlyWrapper();
+    private final PiecePositionIndex piecePositions = new PiecePositionIndex();
+    private final ReadonlyPiecePositionIndex readonlyPiecePositions = piecePositions.readonlyWrapper();
 
     // Current bounding box of piece positions. Updated whenever piece positions change.
     private Rect gridBounds = piecePositions.getBoundingRect();
@@ -147,16 +156,16 @@ abstract class BaseGridView extends View {
             return;
         }
 
-        int draggedPieceIndex = -1;
+        long draggedPieces = 0;
         float dragDeltaX = 0.0f;
         float dragDeltaY = 0.0f;
-        if (dragState != null && dragState.pieceIndex != -1) {
-            draggedPieceIndex = dragState.pieceIndex;
+        if (dragState != null && dragState.pieces != 0) {
+            draggedPieces = dragState.pieces;
             dragDeltaX = dragState.deltaX;
             dragDeltaY = dragState.deltaY;
         }
         gridDrawer.draw(canvas, drawDimensions, readonlyPiecePositions,
-                draggedPieceIndex, dragDeltaX, dragDeltaY);
+                draggedPieces, dragDeltaX, dragDeltaY);
     }
 
     @Override
@@ -207,11 +216,59 @@ abstract class BaseGridView extends View {
         return piecePositions.indexOf(gridDrawer.calculateGridPos(drawDimensions, pixelX, pixelY));
     }
 
-    private void movePieceBy(int pieceIndex, float deltaX, float deltaY) {
-        Pos source = piecePositions.get(pieceIndex);
+    private void movePiecesBy(long pieces, @Nullable GroupFinder.Step[] steps, float deltaX, float deltaY) {
+        if (pieces == 0) {
+            return;
+        }
+        // Precondition: steps != null iff. `pieces` has more than one bit set.
+        if (Util.isMultiDrag(pieces) != (steps != null)) {
+            throw new AssertionError();
+        }
+        int firstPieceIndex = steps == null ? Util.getDraggedIndex(pieces) : steps[0].pieceIndex;
+        Pos source = piecePositions.get(firstPieceIndex);
         PointF origin = gridDrawer.calculateFieldCenter(drawDimensions, source.x, source.y);
         Pos destination = gridDrawer.calculateGridPos(drawDimensions, origin.x + deltaX, origin.y + deltaY);
-        piecePositions.moveOrSwap(pieceIndex, destination);
+        if (source.equals(destination)) {
+            return;
+        }
+        if (steps == null) {
+            // Move a single piece.
+            piecePositions.moveOrSwap(firstPieceIndex, destination);
+        } else {
+            // Move multiple pieces. Note that the set of source and destination positions may
+            // partially overlap, but that's okay since we use the source piece index (not its
+            // position) to identify the piece to be moved, and since all destinations are distinct,
+            // each piece will end up in the right place.
+            //
+            // This code also behaves well if some destination positions are already occupied by
+            // pieces, as long as the sets of source and destination positions are disjoint. In that
+            // case, the existing pieces will be swapped to the source while maintaining their
+            // original configuration. For example:
+            //
+            //      .......     .......
+            //      .aa.b..     .b..aa.   Moving the a's three spaces to the right moves b and c to
+            //      .aa..c.  => ..c.aa.   the left, keeping their relative positions intact.
+            //      .......     .......
+            //
+            // The only case that isn't handled very nicely is when some of the destination fields
+            // are occupied, and there is overlap between source and destination fields. In that
+            // case, the occupied destination fields are moved to the vacated source fields in a way
+            // that may break up an existing configuration. For example:
+            //
+            //      .......     .......
+            //      ..aa.b.     ...baa.   Moving the a's two spaces to the right moves the b's to
+            //      .aaa.b.  => .b.aaa.   the left, but by different amounts, breaking the group up.
+            //      .......     .......
+            //
+            // I think this is acceptable; I don't think there is a nicer way to handle this without
+            // involving other fields than the source and destination fields, and I don't think
+            // users expect would expect anything better to happen in this case.
+            int[] pieceIndices = GroupFinder.getPieces(steps);
+            Pos[] pieceDestinations  = GroupFinder.reconstructPositions(steps, destination);
+            for (int i = 0; i < steps.length; ++i) {
+                piecePositions.moveOrSwap(pieceIndices[i], pieceDestinations[i]);
+            }
+        }
         piecePositionsChanged();
     }
 
@@ -271,6 +328,7 @@ abstract class BaseGridView extends View {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 dragState = new DragState(event, findPieceIndex(event.getX(), event.getY()));
+                startLongPressDetection(dragState);
                 LogUtil.v("Drag started");
                 invalidate();
                 return true;
@@ -279,7 +337,7 @@ abstract class BaseGridView extends View {
                 if (dragState == null || !dragState.update(event)) {
                     return false;
                 }
-                if (dragState.pieceIndex == -1) {
+                if (dragState.pieces == 0) {
                     dragViewBy(dragState.deltaDeltaX, dragState.deltaDeltaY);
                 }
                 invalidate();
@@ -290,9 +348,7 @@ abstract class BaseGridView extends View {
                     return false;
                 }
                 LogUtil.v("Drag finished");
-                if (dragState.pieceIndex >= 0) {
-                    movePieceBy(dragState.pieceIndex, dragState.deltaX, dragState.deltaY);
-                }
+                movePiecesBy(dragState.pieces, dragState.pieceSteps, dragState.deltaX, dragState.deltaY);
                 dragState = null;
                 invalidate();
                 return true;
@@ -310,6 +366,29 @@ abstract class BaseGridView extends View {
             invalidate();
         }
         return false;
+    }
+
+    private void startLongPressDetection(final DragState originalDragState) {
+        if (originalDragState.pieces != 0) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (dragState == originalDragState && dragState.pieces != 0 &&
+                            sqr(dragState.deltaX) + sqr(dragState.deltaY) <
+                                sqr(LONG_PRESS_MAX_MOVEMENT * drawDimensions.scale)) {
+                        GroupFinder.Step[] pieceSteps = GroupFinder.calculateSteps(
+                                gridDrawer.getConnectionDirections(),
+                                readonlyPiecePositions,
+                                Util.getDraggedIndex(dragState.pieces));
+                        if (pieceSteps.length > 1) {
+                            dragState.pieces = GroupFinder.getPieceMask(pieceSteps);
+                            dragState.pieceSteps = pieceSteps;
+                            invalidate();
+                        }
+                    }
+                }
+            }, ViewConfiguration.getLongPressTimeout());
+        }
     }
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -339,19 +418,26 @@ abstract class BaseGridView extends View {
         return x < min ? min : x > max ? max : x;
     }
 
+    private static float sqr(float x) {
+        return x * x;
+    }
+
     private static class DragState {
         final int pointerId;
-        final int pieceIndex;
         final float startX, startY;
         float lastX, lastY;
         float deltaX = 0.0f, deltaY = 0.0f;
         float deltaDeltaX = 0.0f, deltaDeltaY = 0.0f;
+        // Bitmask of pieces being dragged. pieceSteps != null iff. more than 1 bit is set in pieces.
+        long pieces;
+        // Steps used to select multiple pieces. Used to reconstruct their positions when dropped.
+        @Nullable GroupFinder.Step[] pieceSteps;
 
-        private DragState(MotionEvent e, int pieceIndex) {
+        private DragState(MotionEvent e, int firstPieceIndex) {
             this.startX = this.lastX = e.getX();
             this.startY = this.lastY = e.getY();
             this.pointerId = e.getPointerId(0);
-            this.pieceIndex = pieceIndex;
+            this.pieces = firstPieceIndex >= 0 ? (long) 1 << firstPieceIndex : 0;
         }
 
         private boolean update(MotionEvent e) {

@@ -46,60 +46,14 @@ class Solution {
         }
     }
 
-    static Progress calculateProgress(PiecePositionIndex piecePositionIndex, Direction[] directions) {
+    static Progress calculateProgress(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {
         return new Solution.Progress(
-                countGroups(piecePositionIndex, directions),
+                GroupFinder.countGroups(directions, piecePositionIndex),
                 countDisconnections(piecePositionIndex, directions),
                 countOverlaps(piecePositionIndex, directions));
     }
 
-    // Simple breadth-first search algorithm to find the number of connected groups.
-    private static int countGroups(final PiecePositionIndex piecePositionIndex, final Direction[] directions) {
-        class GroupCounter {
-            GroupCounter() {
-                for (int startIndex = 0; startIndex < piecePositionIndex.size(); ++startIndex) {
-                    if (addToQueue(startIndex)) {
-                        ++groupCount;
-                        processQueue();
-                    }
-                }
-            }
-
-            boolean addToQueue(int i) {
-                if (seen[i]) {
-                    return false;
-                }
-                seen[i] = true;
-                queue[queueSize++] = i;
-                return true;
-            }
-
-            void processQueue() {
-                while (queuePos < queueSize) {
-                    int i = queue[queuePos++];
-                    Pos pos = piecePositionIndex.get(i);
-                    for (Direction dir : directions) {
-                        if (dir.hasPath(i)) {
-                            Pos newPos = dir.step(pos);
-                            int j = piecePositionIndex.indexOf(newPos);
-                            if (j >= 0 && dir.opposite().hasPath(j)) {
-                                addToQueue(j);
-                            }
-                        }
-                    }
-                }
-            }
-
-            boolean[] seen = new boolean[piecePositionIndex.size()];
-            int[] queue = new int[piecePositionIndex.size()];
-            int queuePos = 0;
-            int queueSize = 0;
-            int groupCount = 0;
-        }
-        return new GroupCounter().groupCount;
-    }
-
-    private static int countDisconnections(PiecePositionIndex piecePositionIndex, Direction[] directions) {
+    private static int countDisconnections(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {
         int result = 0;
         for (int i = 0; i < piecePositionIndex.size(); ++i) {
             Pos pos = piecePositionIndex.get(i);
@@ -115,7 +69,7 @@ class Solution {
         return result;
     }
 
-    private static int countOverlaps(PiecePositionIndex piecePositionIndex, Direction[] directions) {
+    private static int countOverlaps(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {
         int result = 0;
         for (int i = 0; i < piecePositionIndex.size(); ++i) {
             Pos pos = piecePositionIndex.get(i);

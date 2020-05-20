@@ -31,5 +31,22 @@ abstract class Util {
         return true;
     }
 
+    /** Utility method to test if {@code pieceIndex} is set in the {@code draggedPieces} bitmask. */
+    static boolean isDragged(long draggedPieces, int pieceIndex) {
+        return (draggedPieces & ((long) 1 << pieceIndex)) != 0;
+    }
+
+    /** Returns whether the number of piece indices in {@code draggedPieces} is greater than 1. */
+    static boolean isMultiDrag(long draggedPieces) {
+        return (draggedPieces & (draggedPieces - 1)) != 0;
+    }
+
+    /**
+     * Returns the lowest piece index in {@code draggedPieces}, or -1 if {@code draggedPieces == 0}.
+     */
+    static int getDraggedIndex(long draggedPieces) {
+        return draggedPieces == 0 ? -1 : Long.numberOfTrailingZeros(draggedPieces);
+    }
+
     private Util() {}
 }

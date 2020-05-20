@@ -16,6 +16,13 @@ import android.graphics.RectF;
  * @see DrawDimensions
  */
 interface GridDrawer {
+
+    /**
+     * Returns an array of grid directions along which pieces may be connected.
+     * Used to detect connected components when selecting multiple pieces by long-pressing.
+     */
+    Direction[] getConnectionDirections();
+
     /** Returns the grid position corresponding with the given pixel coordinates. */
     Pos calculateGridPos(DrawDimensions drawDimensions, float pixelX, float pixelY);
 
@@ -31,12 +38,12 @@ interface GridDrawer {
     /**
      * Draws the current grid and pieces.
      *
-     * <p>If a piece is currently being dragged, {@code draggedPieceIndex} is a nonnegative integer
-     * and {@code dragDeltaX} and {@code dragDeltaY} give the current drag offset. If no piece is
-     * being dragged, {@code draggedPieceIndex == -1} and {@code dragDeltaX} and {@code dragDeltaY}
+     * <p>{@code draggedPieces} is a bitmask of pieces currently being dragged. When nonzero,
+     * {@code dragDeltaX} and {@code dragDeltaY} give the current drag offset. If no piece is
+     * being dragged, {@code draggedPieces == 0} and {@code dragDeltaX} and {@code dragDeltaY}
      * should be ignored.
      */
     void draw(Canvas canvas, DrawDimensions drawDimensions,
               ReadonlyPiecePositionIndex piecePositions,
-              int draggedPieceIndex, float dragDeltaX, float dragDeltaY);
+              long draggedPieces, float dragDeltaX, float dragDeltaY);
 }

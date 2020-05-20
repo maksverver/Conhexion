@@ -2,6 +2,7 @@ package ch.verver.chilab;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -61,6 +62,11 @@ class HexGridDrawer implements GridDrawer {
         tileOverlapErrors.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_error_north_east, theme));
         tileOverlapErrors.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_error_south_east, theme));
         tileOverlapErrors.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_error_south, theme));
+    }
+
+    @Override
+    public Direction[] getConnectionDirections() {
+        return HexDirection.values();
     }
 
     @Override
@@ -133,24 +139,31 @@ class HexGridDrawer implements GridDrawer {
     }
 
     @Override
-    public void draw(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions, int draggedPieceIndex, float dragDeltaX, float dragDeltaY) {
+    public void draw(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions, long draggedPieces, float dragDeltaX, float dragDeltaY) {
+        final int n = piecePositions.size();
+
         // Draw grid in the background
         drawGridLines(canvas, drawDimensions);
 
         // Draw pieces (except dragged one)
-        for (int i = 0; i < piecePositions.size(); ++i) {
-            if (i != draggedPieceIndex) {
-                drawPiece(canvas, drawDimensions, i, piecePositions.get(i));
+        for (int i = 0; i < n; ++i) {
+            if (!Util.isDragged(draggedPieces, i)) {
+                drawPiece(canvas, drawDimensions, i, piecePositions.get(i), 0.0f, 0.0f, null);
             }
         }
 
         // Draw overlap errors.
-        drawOverlapErrors(canvas, drawDimensions, piecePositions, draggedPieceIndex);
+        drawOverlapErrors(canvas, drawDimensions, piecePositions, draggedPieces);
 
-        // Draw dragged piece last, so it's on top of everything else.
-        if (draggedPieceIndex != -1) {
-            drawPiece(canvas, drawDimensions, draggedPieceIndex, piecePositions.get(draggedPieceIndex),
-                    dragDeltaX, dragDeltaY);
+        // Draw dragged pieces last, so they're on top of everything else.
+        if (draggedPieces != 0) {
+            ColorFilter colorFilter = Util.isMultiDrag(draggedPieces) ? ColorFilters.NEGATIVE : null;
+            for (int i = 0; i < n; ++i) {
+                if (Util.isDragged(draggedPieces, i)) {
+                    drawPiece(canvas, drawDimensions, i, piecePositions.get(i),
+                            dragDeltaX, dragDeltaY, colorFilter);
+                }
+            }
         }
     }
 
@@ -211,50 +224,47 @@ class HexGridDrawer implements GridDrawer {
         return new Rect(Math.round(x1), Math.round(y1), Math.round(x2), Math.round(y2));
     }
 
-    private static void draw(Canvas canvas, Rect bounds, Drawable drawable) {
+    private static void draw(Canvas canvas, Rect bounds, Drawable drawable, @Nullable ColorFilter colorFilter) {
         drawable.setBounds(bounds);
+        drawable.setColorFilter(colorFilter);
         drawable.draw(canvas);
     }
 
-    private void drawPiece(Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, Pos pos) {
-        drawPiece(canvas, drawDimensions, pieceIndex, pos, 0.0f, 0.0f);
-    }
-
     private void drawPiece(Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, Pos pos,
-                           float dragOffsetX, float dragOffsetY) {
+                           float dragOffsetX, float dragOffsetY, @Nullable ColorFilter colorFilter) {
         Rect bounds = getTileBounds(drawDimensions, pos, dragOffsetX, dragOffsetY);
 
-        draw(canvas, bounds, tileBackground);
+        draw(canvas, bounds, tileBackground, colorFilter);
 
         for (HexDirection direction : BEAM_DRAW_ORDER) {
             if (!direction.hasPath(pieceIndex)) {
-                draw(canvas, bounds, tileBacksides.get(direction));
+                draw(canvas, bounds, tileBacksides.get(direction), colorFilter);
             }
         }
 
-        draw(canvas, bounds, tileCenter);
+        draw(canvas, bounds, tileCenter, null);
 
         // Order in which beams are drawn matters! We want to draw back-to-front.
         for (HexDirection direction : BEAM_DRAW_ORDER) {
             if (direction.hasPath(pieceIndex)) {
-                draw(canvas, bounds, tileBeams.get(direction));
+                draw(canvas, bounds, tileBeams.get(direction), null);
             }
         }
     }
 
     private void drawOverlapErrors(Canvas canvas, DrawDimensions drawDimensions,
-                                   ReadonlyPiecePositionIndex piecePositions, int draggedIndex) {
-        for (int i = 0; i < piecePositions.size(); ++i) {
-            if (i != draggedIndex) {
+                                   ReadonlyPiecePositionIndex piecePositions, long draggedPieces) {
+        for (int i = 0, n = piecePositions.size(); i < n; ++i) {
+            if (!Util.isDragged(draggedPieces, i))  {
                 Pos pos = piecePositions.get(i);
                 for (HexDirection direction : OVERLAP_ERROR_DIRECTIONS) {
                     int j = piecePositions.indexOf(direction.step(pos));
-                    if (j != -1 && j != draggedIndex && (!direction.hasPath(i) || !direction.opposite().hasPath(j))) {
-                        draw(canvas, getTileBounds(drawDimensions, pos), tileOverlapErrors.get(direction));
+                    if (j != -1 && !Util.isDragged(draggedPieces, j) &&
+                            (!direction.hasPath(i) || !direction.opposite().hasPath(j))) {
+                        draw(canvas, getTileBounds(drawDimensions, pos), tileOverlapErrors.get(direction), null);
                     }
                 }
             }
         }
     }
-
 }

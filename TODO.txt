@@ -1,5 +1,4 @@
   - AppState: allow overriding state with intent (as with RectPuzzleActivity and HexPuzzleActivity)
-  - Support long click to move connected groups (use ColorFilter to show selected tiles?)
   - Better launcher icon
   - Tutorial page(s) that you can swipe through.
     This puzzle has only three simple rules:
@@ -7,7 +6,7 @@
     (2) "Backsides" must not touch/overlap
     (3) Connect all pieces into a single group
     Hint: don't create loops?
-    Hint: you can pinch to zoom, drag to pan, long-press to move a group?
+    Hint: you can pinch to zoom, drag to pan, long-press to move a group
   - App menu:
       - option to show tutorial
       - option to reset current puzzle (confirm!)
@@ -20,6 +19,7 @@ Cleanup:
   - Remove old HexPuzzleActivity and RectPuzzleActivity
   - Remove old SharedPreferences
   - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?
+  - Maybe: separate rectangular pieces into fore- and background, and make selection invert background only (as is done for hexagonal pieces)
 
 Stretch goals:
   - Fancy fragment transition animations
