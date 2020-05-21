@@ -21,10 +21,17 @@ public class MainActivity extends AppCompatActivity implements HexPiecePositions
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // appState has already been restored from SharedPreferences in App.onCreate().
         appState = App.getAppState();
 
-        rectPuzzleFragment = new RectPuzzleFragment();
-        hexPuzzleFragment = new HexPuzzleFragment();
+        if (savedInstanceState == null && getIntent() != null) {
+            // Restore app state from intent extras. This allows overriding part of the app state
+            // with an intent, for debugging purposes. See DEBUGGING.txt for examples.
+            appState.restoreFromIntentExtras(getIntent().getExtras());
+        }
+
+        rectPuzzleFragment = new RectPuzzleFragment(appState.getRectPuzzlePiecePositions());
+        hexPuzzleFragment = new HexPuzzleFragment(appState.getHexPuzzlePiecePositions());
 
         switchTo(appState.getActiveFragmentId());
     }

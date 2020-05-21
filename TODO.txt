@@ -1,4 +1,3 @@
-  - AppState: allow overriding state with intent (as with RectPuzzleActivity and HexPuzzleActivity)
   - Better launcher icon
   - Tutorial page(s) that you can swipe through.
     This puzzle has only three simple rules:
@@ -16,6 +15,7 @@
       - solving hex puzzle should allow you to reset it
 
 Cleanup:
+  - Rename "main-prefs" to "app-state"?
   - Remove old HexPuzzleActivity and RectPuzzleActivity
   - Remove old SharedPreferences
   - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?

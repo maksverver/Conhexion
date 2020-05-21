@@ -2,6 +2,7 @@ package ch.verver.chilab;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
@@ -27,7 +28,8 @@ class AppState {
     }
 
     void setActiveFragmentId(FragmentId newValue) {
-        this.activeFragmentId = newValue;
+        activeFragmentId = newValue;
+        LogUtil.d("AppState: %s = %s", ACTIVE_FRAGMENT_ID_KEY, activeFragmentId.name());
     }
 
     ArrayList<Pos> getRectPuzzlePiecePositions() {
@@ -36,6 +38,7 @@ class AppState {
 
     void setRectPuzzlePiecePositions(ArrayList<Pos> newValue) {
         rectPuzzlePiecePositions = new ArrayList<>(newValue);
+        LogUtil.d("AppState: %s = %s", RECT_PIECES_KEY, RectPuzzle.encode(rectPuzzlePiecePositions));
     }
 
     ArrayList<Pos> getHexPuzzlePiecePositions() {
@@ -44,6 +47,7 @@ class AppState {
 
     void setHexPuzzlePiecePositions(ArrayList<Pos> newValue) {
         hexPuzzlePiecePositions = new ArrayList<>(newValue);
+        LogUtil.d("AppState: %s = %s", HEX_PIECES_KEY, HexPuzzle.encode(hexPuzzlePiecePositions));
     }
 
     void saveToSharedPreferences(Context context) {
@@ -53,6 +57,21 @@ class AppState {
             .putString(HEX_PIECES_KEY, HexPuzzle.encode(hexPuzzlePiecePositions))
             .putString(ACTIVE_FRAGMENT_ID_KEY, activeFragmentId.name())
             .apply();
+    }
+
+    void restoreFromIntentExtras(@Nullable Bundle extras) {
+        if (extras == null) {
+            return;
+        }
+        if (restoreActiveFragmentId(extras)) {
+            LogUtil.i("AppState: restored active fragment from intent extras");
+        }
+        if (restoreRectPuzzlePiecePositions(extras)) {
+            LogUtil.i("AppState: restored rect puzzle pieces from intent extras");
+        }
+        if (restoreHexPuzzlePiecePositions(extras)) {
+            LogUtil.i("AppState: restored hex puzzle pieces from intent extras");
+        }
     }
 
     boolean restoreFromSharedPreferences(Context context) {
@@ -77,7 +96,14 @@ class AppState {
     }
 
     private boolean restoreRectPuzzlePiecePositions(SharedPreferences prefs) {
-        String encoded = prefs.getString(RECT_PIECES_KEY, null);
+        return restoreRectPuzzlePiecePositions(prefs.getString(RECT_PIECES_KEY, null));
+    }
+
+    private boolean restoreRectPuzzlePiecePositions(Bundle extras) {
+        return restoreRectPuzzlePiecePositions(extras.getString(RECT_PIECES_KEY, null));
+    }
+
+    private boolean restoreRectPuzzlePiecePositions(@Nullable String encoded) {
         if (encoded == null) {
             return false;
         }
@@ -90,7 +116,14 @@ class AppState {
     }
 
     private boolean restoreHexPuzzlePiecePositions(SharedPreferences prefs) {
-        String encoded = prefs.getString(HEX_PIECES_KEY, null);
+        return restoreHexPuzzlePiecePositions(prefs.getString(HEX_PIECES_KEY, null));
+    }
+
+    private boolean restoreHexPuzzlePiecePositions(Bundle extras) {
+        return restoreHexPuzzlePiecePositions(extras.getString(HEX_PIECES_KEY, null));
+    }
+
+    private boolean restoreHexPuzzlePiecePositions(@Nullable String encoded) {
         if (encoded == null) {
             return false;
         }
@@ -116,7 +149,15 @@ class AppState {
     }
 
     private boolean restoreActiveFragmentId(SharedPreferences prefs) {
-        FragmentId newValue = parseFragmentId(prefs.getString(ACTIVE_FRAGMENT_ID_KEY, null));
+        return restoreActiveFragmentId(prefs.getString(ACTIVE_FRAGMENT_ID_KEY, null));
+    }
+
+    private boolean restoreActiveFragmentId(Bundle extras) {
+        return restoreActiveFragmentId(extras.getString(ACTIVE_FRAGMENT_ID_KEY, null));
+    }
+
+    private boolean restoreActiveFragmentId(@Nullable String encoded) {
+        FragmentId newValue = parseFragmentId(encoded);
         if (newValue == null) {
             return false;
         }
