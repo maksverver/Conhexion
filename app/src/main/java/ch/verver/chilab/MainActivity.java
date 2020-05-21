@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity implements HexPiecePositions
     private AppState appState;
     private RectPuzzleFragment rectPuzzleFragment;
     private HexPuzzleFragment hexPuzzleFragment;
-    private FragmentId activeFragmentId = FragmentId.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +29,16 @@ public class MainActivity extends AppCompatActivity implements HexPiecePositions
             appState.restoreFromIntentExtras(getIntent().getExtras());
         }
 
-        rectPuzzleFragment = new RectPuzzleFragment(appState.getRectPuzzlePiecePositions());
-        hexPuzzleFragment = new HexPuzzleFragment(appState.getHexPuzzlePiecePositions());
+        rectPuzzleFragment = (RectPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.RECT_PUZZLE.name());
+        if (rectPuzzleFragment == null) {
+            rectPuzzleFragment = new RectPuzzleFragment(appState.getRectPuzzlePiecePositions());
+        }
 
-        switchTo(appState.getActiveFragmentId());
+        hexPuzzleFragment = (HexPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.HEX_PUZZLE.name());
+        if (hexPuzzleFragment == null) {
+            hexPuzzleFragment = new HexPuzzleFragment(appState.getHexPuzzlePiecePositions());
+        }
+        setActiveFragment(appState.getActiveFragmentId());
     }
 
     @Override
@@ -52,11 +57,11 @@ public class MainActivity extends AppCompatActivity implements HexPiecePositions
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.switch_to_rect_puzzle:
-                switchTo(FragmentId.RECT_PUZZLE);
+                setActiveFragment(FragmentId.RECT_PUZZLE);
                 return true;
 
             case R.id.switch_to_hex_puzzle:
-                switchTo(FragmentId.HEX_PUZZLE);
+                setActiveFragment(FragmentId.HEX_PUZZLE);
                 return true;
 
             default:
@@ -64,31 +69,18 @@ public class MainActivity extends AppCompatActivity implements HexPiecePositions
         }
     }
 
-    private void switchTo(FragmentId newFragmentId) {
-        LogUtil.i("Switching main fragment from %s to %s", activeFragmentId, newFragmentId);
-        if (activeFragmentId == newFragmentId) {
-            return;
-        }
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        Fragment oldFragment = getFragment(activeFragmentId);
+    private void setActiveFragment(FragmentId newFragmentId) {
         Fragment newFragment = getFragment(newFragmentId);
         if (newFragment == null) {
-            if (oldFragment != null) {
-                transaction.remove(oldFragment);
-            }
-        } else {  // newFragment != null
-            transaction.replace(R.id.fragment_container, newFragment, null);
-            // TODO: use setCustomAnimations() to slide in/out instead?
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            LogUtil.e("Cannot switch to nonexistent fragment %s!", newFragmentId);
+            return;
         }
-        if (oldFragment != null) {
-            /* Could add the old state to the back stack like this. But: how would the MainActivity
-                know that the active fragment has changed? */
-            // transaction.setReorderingAllowed(true);
-            // transaction.addToBackStack(activeFragmentId.name());
-        }
+        LogUtil.i("Switching main fragment to %s", newFragmentId);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, newFragment, newFragmentId.name());
+        // TODO: use setCustomAnimations() to slide in/out instead?
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.commit();
-        activeFragmentId = newFragmentId;
         appState.setActiveFragmentId(newFragmentId);
     }
 

@@ -2,6 +2,7 @@ package ch.verver.chilab;
 
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
@@ -13,7 +14,10 @@ import java.util.List;
 
 public class HexPuzzleFragment extends Fragment {
 
-    private final List<Pos> initialPiecePositions;
+    private @Nullable List<Pos> initialPiecePositions;
+
+    // Required constructor -- called by the framework.
+    public HexPuzzleFragment() {}
 
     public HexPuzzleFragment(List<Pos> initialPiecePositions) {
         this.initialPiecePositions = initialPiecePositions;
@@ -24,7 +28,10 @@ public class HexPuzzleFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_hex_puzzle, container, false);
         HexGridView hexGridView = view.findViewById(R.id.hex_grid_view);
-        hexGridView.setPiecePositions(initialPiecePositions);
+        if (initialPiecePositions != null) {
+            hexGridView.setPiecePositions(initialPiecePositions);
+            initialPiecePositions = null;
+        }
         FragmentActivity activity = getActivity();
         if (activity instanceof HexPiecePositionsChangedListener) {
             hexGridView.setPiecePositionsChangedListener((HexPiecePositionsChangedListener) activity);
