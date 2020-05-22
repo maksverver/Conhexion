@@ -90,7 +90,7 @@ class PiecePositionIndex implements ReadonlyPiecePositionIndex {
             return new Rect(0, 0, 0, 0);
         }
         Pos firstPos = positions.get(0);
-        Rect result = new Rect(firstPos.x, firstPos.y, firstPos.x, firstPos.y);
+        Rect result = new Rect(firstPos.x, firstPos.y, firstPos.x + 1, firstPos.y + 1);
         for (int i = 1; i < positions.size(); ++i) {
             Pos pos = positions.get(i);
             result.left = Math.min(result.left, pos.x);
