@@ -4,7 +4,7 @@
     (1) "Paths" must connect
     (2) "Backsides" must not touch/overlap
     (3) Connect all pieces into a single group
-    Hint: don't create loops?
+    Hint: solution must contain two loops?
     Hint: you can pinch to zoom, drag to pan, long-press to move a group
   - App menu:
       - option to show tutorial
