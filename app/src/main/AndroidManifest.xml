@@ -21,12 +21,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Deprecated! Use MainActivity with a RectPuzzleFragment instead! -->
-        <activity android:name=".RectPuzzleActivity" android:exported="true"/>
-
-        <!-- Deprecated! Use MainPuzzleActivity with a HexPuzzleFragment instead! -->
-        <activity android:name=".HexPuzzleActivity" android:exported="true"/>
     </application>
 
 </manifest>
