@@ -1,11 +1,12 @@
 package ch.verver.chilab;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /** Utility class to encode/decode puzzle state to/from String. */
 abstract class StateCodec {
 
-    static String encodePositions(ArrayList<Pos> positions) {
+    static String encodePositions(List<Pos> positions) {
         int[] ints = new int[positions.size() * 2];
         for (int i = 0; i < positions.size(); ++i) {
             Pos pos = positions.get(i);

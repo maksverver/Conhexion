@@ -108,8 +108,8 @@ abstract class BaseGridView extends View {
         updateCanvasBounds();
     }
 
-    public ArrayList<Pos> getPiecePositions() {
-        return piecePositions.toList();
+    public ImmutableList<Pos> getPiecePositions() {
+        return piecePositions.toImmutableList();
     }
 
     public PiecePositionIndex getPiecePositionIndex() {
@@ -465,7 +465,7 @@ abstract class BaseGridView extends View {
 
         public SavedState(BaseGridView view, Parcelable superState) {
             super(superState);
-            piecePositions = view.piecePositions.toList();
+            piecePositions = view.piecePositions.toArrayList();
             zoomCx = view.zoomCx;
             zoomCy = view.zoomCy;
             zoomFactor = view.zoomFactor;

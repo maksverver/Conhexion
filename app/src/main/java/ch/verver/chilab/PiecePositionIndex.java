@@ -80,8 +80,13 @@ class PiecePositionIndex implements ReadonlyPiecePositionIndex {
     }
 
     @Override
-    public ArrayList<Pos> toList() {
+    public ArrayList<Pos> toArrayList() {
         return new ArrayList<>(positions);
+    }
+
+    @Override
+    public ImmutableList<Pos> toImmutableList() {
+        return ImmutableList.copyOf(positions);
     }
 
     @Override
@@ -165,8 +170,13 @@ class PiecePositionIndex implements ReadonlyPiecePositionIndex {
         }
 
         @Override
-        public ArrayList<Pos> toList() {
-            return delegate.toList();
+        public ArrayList<Pos> toArrayList() {
+            return delegate.toArrayList();
+        }
+
+        @Override
+        public ImmutableList<Pos> toImmutableList() {
+            return delegate.toImmutableList();
         }
 
         @Override

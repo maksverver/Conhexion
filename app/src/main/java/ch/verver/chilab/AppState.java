@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /** Holds the shared app state, which is persisted. */
 class AppState {
@@ -16,8 +17,8 @@ class AppState {
     private static final String ACTIVE_FRAGMENT_ID_KEY = "active-fragment";
 
     private FragmentId activeFragmentId = FragmentId.NONE;
-    private ArrayList<Pos> rectPuzzlePiecePositions = new ArrayList<>();
-    private ArrayList<Pos> hexPuzzlePiecePositions = new ArrayList<>();
+    private ImmutableList<Pos> rectPuzzlePiecePositions = ImmutableList.empty();
+    private ImmutableList<Pos> hexPuzzlePiecePositions = ImmutableList.empty();
 
     private static SharedPreferences getSharedPreferences(Context context) {
         return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -32,21 +33,21 @@ class AppState {
         LogUtil.d("AppState: %s = %s", ACTIVE_FRAGMENT_ID_KEY, activeFragmentId.name());
     }
 
-    ArrayList<Pos> getRectPuzzlePiecePositions() {
-        return new ArrayList<>(rectPuzzlePiecePositions);
+    ImmutableList<Pos> getRectPuzzlePiecePositions() {
+        return rectPuzzlePiecePositions;
     }
 
-    void setRectPuzzlePiecePositions(ArrayList<Pos> newValue) {
-        rectPuzzlePiecePositions = new ArrayList<>(newValue);
+    void setRectPuzzlePiecePositions(List<Pos> newValue) {
+        rectPuzzlePiecePositions = ImmutableList.copyOf(newValue);
         LogUtil.d("AppState: %s = %s", RECT_PIECES_KEY, RectPuzzle.encode(rectPuzzlePiecePositions));
     }
 
-    ArrayList<Pos> getHexPuzzlePiecePositions() {
-        return new ArrayList<>(hexPuzzlePiecePositions);
+    ImmutableList<Pos> getHexPuzzlePiecePositions() {
+        return hexPuzzlePiecePositions;
     }
 
-    void setHexPuzzlePiecePositions(ArrayList<Pos> newValue) {
-        hexPuzzlePiecePositions = new ArrayList<>(newValue);
+    void setHexPuzzlePiecePositions(List<Pos> newValue) {
+        hexPuzzlePiecePositions = ImmutableList.copyOf(newValue);
         LogUtil.d("AppState: %s = %s", HEX_PIECES_KEY, HexPuzzle.encode(hexPuzzlePiecePositions));
     }
 
@@ -85,10 +86,10 @@ class AppState {
 
     void fillInMissingFields() {
         if (rectPuzzlePiecePositions.isEmpty()) {
-            rectPuzzlePiecePositions = RectPuzzle.getRandomPiecePositions();
+            rectPuzzlePiecePositions = ImmutableList.copyOf(RectPuzzle.getRandomPiecePositions());
         }
         if (hexPuzzlePiecePositions.isEmpty()) {
-            hexPuzzlePiecePositions = HexPuzzle.getRandomPiecePositions();
+            hexPuzzlePiecePositions = ImmutableList.copyOf(HexPuzzle.getRandomPiecePositions());
         }
         if (activeFragmentId == FragmentId.NONE) {
             activeFragmentId = FragmentId.RECT_PUZZLE;
@@ -111,7 +112,7 @@ class AppState {
         if (newValue == null) {
             return false;
         }
-        rectPuzzlePiecePositions = newValue;
+        rectPuzzlePiecePositions = ImmutableList.copyOf(newValue);
         return true;
     }
 
@@ -131,7 +132,7 @@ class AppState {
         if (newValue == null) {
             return false;
         }
-        hexPuzzlePiecePositions = newValue;
+        hexPuzzlePiecePositions = ImmutableList.copyOf(newValue);
         return true;
     }
 

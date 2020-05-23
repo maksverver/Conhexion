@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /** Definitions for a variant of the China Labyrinth puzzle played on a square grid. */
 abstract class RectPuzzle {
@@ -28,7 +29,7 @@ abstract class RectPuzzle {
         return positions;
     }
 
-    public static String encode(ArrayList<Pos> positions) {
+    public static String encode(List<Pos> positions) {
         return StateCodec.encodePositions(positions);
     }
 

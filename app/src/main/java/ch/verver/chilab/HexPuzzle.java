@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /** Definitions for the real China Labyrinth puzzle played on a hexagonal grid. */
 abstract class HexPuzzle {
@@ -27,7 +28,7 @@ abstract class HexPuzzle {
         return points;
     }
 
-    public static String encode(ArrayList<Pos> positions) {
+    public static String encode(List<Pos> positions) {
         return StateCodec.encodePositions(positions);
     }
 

@@ -13,7 +13,10 @@ import java.util.NoSuchElementException;
 interface ReadonlyPiecePositionIndex extends Iterable<Pos> {
 
     /** Returns a copy of the current piece positions. */
-    ArrayList<Pos> toList();
+    ArrayList<Pos> toArrayList();
+
+    /** Returns an immutable copy of the current piece positions. */
+    ImmutableList<Pos> toImmutableList();
 
     /**
      * Returns a minimum bounding rectangle (left, top, right, bottom) such that for all positions,
