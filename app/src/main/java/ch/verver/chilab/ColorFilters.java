@@ -15,9 +15,9 @@ abstract class ColorFilters {
 
     static ColorFilter LIGHTER =
             new ColorMatrixColorFilter(new ColorMatrix(new float[] {
-                    1, 0, 0, 0, 96, // red
-                    0, 1, 0, 0, 96, // green
-                    0, 0, 1, 0, 96, // blue
+                    1, 0, 0, 0, 64, // red
+                    0, 1, 0, 0, 64, // green
+                    0, 0, 1, 0, 64, // blue
                     0, 0, 0, 1,  0  // alpha
             }));
 
