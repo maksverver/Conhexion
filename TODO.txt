@@ -1,11 +1,4 @@
-  - Better launcher icon
-  - Tutorial page(s) that you can swipe through.
-    This puzzle has only three simple rules:
-    (1) "Paths" must connect
-    (2) "Backsides" must not touch/overlap
-    (3) Connect all pieces into a single group
-    Hint: solution must contain two loops?
-    Hint: you can pinch to zoom, drag to pan, long-press to move a group
+  - Increase contrast of puzzle piece colors
   - App menu:
       - option to show tutorial
       - option to reset current puzzle (confirm!)
@@ -13,15 +6,26 @@
   - Victory animation after solving!
       - solving rect puzzle should get you towards hex puzzle
       - solving hex puzzle should allow you to reset it
+  - Tutorial page(s) that you can swipe through.
+  - Allow BaseGridView to take up more space (especially useful in horizontal mode):
+        - Hide app bar / replace with a floating button?
+        - Fullscreen mode? (Always on, or optional?)
+          https://developer.android.com/training/system-ui/immersive
+  - Option to rotate hex grid by 60 degrees?
+  - Better launcher icon
 
 Cleanup:
-  - Rename "main-prefs" to "app-state"?
-  - Remove old HexPuzzleActivity and RectPuzzleActivity
-  - Remove old SharedPreferences
+  - Maybe: refactor AppState into a proper ViewModel with LiveData?
+    https://developer.android.com/topic/libraries/architecture/viewmodel
+    The GridViews could then manipulate the LiveData, and MainActivity
+    could subscribe to state changes via the LiveModel, which seems cleaner.
   - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?
-  - Maybe: separate rectangular pieces into fore- and background, and make selection invert background only (as is done for hexagonal pieces)
 
 Stretch goals:
+  - Undo function
+  - Ability to load/save states?
+  - Auto-save e.g. 15 seconds after a change is made (requires refactoring AppState)
+  - Dragging a piece to the side should scroll the view
   - Fancy fragment transition animations
   - Light/dark mode
   - Ability to name & upload your solution
