@@ -28,3 +28,6 @@ Stretch goals:
   - Fancy fragment transition animations
   - Light/dark mode
   - Ability to name & upload your solution
+
+Non-goals:
+  - Haptic feedback when selecting pieces. (I implemented it but I didn't like how it felt.)
