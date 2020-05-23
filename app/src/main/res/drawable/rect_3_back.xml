@@ -5,19 +5,10 @@
     android:viewportHeight="100">
   <group>
     <clip-path
-        android:pathData="M100,25l-0,75l-100,0l-0,-75z"/>
+        android:pathData="M75,25l-0,75l-75,0l-0,-75z"/>
     <path
         android:pathData="M50,50m-0,-35.355a35.355,35.355 0,1 1,-0 70.71a35.355,35.355 0,1 1,-0 -70.71"
         android:fillColor="#8f008f"
         android:fillAlpha="1"/>
-    <path
-        android:pathData="m40,25v25a10,10 0,0 0,5 8.66,10 10,0 0,0 10,0 10,10 0,0 0,5 -8.66v-25"
-        android:strokeAlpha="1"
-        android:strokeLineJoin="miter"
-        android:strokeWidth="2"
-        android:fillColor="#ff8000"
-        android:strokeColor="#ffff00"
-        android:fillAlpha="1"
-        android:strokeLineCap="butt"/>
   </group>
 </vector>

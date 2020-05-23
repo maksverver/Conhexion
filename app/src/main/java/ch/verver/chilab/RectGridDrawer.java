@@ -15,34 +15,46 @@ import androidx.core.content.res.ResourcesCompat;
 
 class RectGridDrawer implements GridDrawer {
 
-    private final Drawable[] pieceDrawables;
+    private final Drawable[] pieceBackDrawables;
+    private final Drawable[] pieceFrontDrawables;
     private final Drawable overlapHorizDrawable;
     private final Drawable overlapVertiDrawable;
     private final Paint gridStrokePaint;
     private final Paint opaquePaint;
 
     public RectGridDrawer(Resources res, @Nullable Resources.Theme theme) {
-        final int[] pieceDrawableIds = {
-                R.drawable.rect_1,
-                R.drawable.rect_2,
-                R.drawable.rect_3,
-                R.drawable.rect_4,
-                R.drawable.rect_5,
-                R.drawable.rect_6,
-                R.drawable.rect_7,
-                R.drawable.rect_8,
-                R.drawable.rect_9,
-                R.drawable.rect_10,
-                R.drawable.rect_11,
-                R.drawable.rect_12,
-                R.drawable.rect_13,
-                R.drawable.rect_14,
-                R.drawable.rect_15,
-        };
-        pieceDrawables = new Drawable[pieceDrawableIds.length];
-        for (int i = 0; i < pieceDrawableIds.length; ++i) {
-            pieceDrawables[i] = ResourcesCompat.getDrawable(res, pieceDrawableIds[i], theme);
-        }
+        pieceBackDrawables = getDrawables(res, theme,
+                R.drawable.rect_1_back,
+                R.drawable.rect_2_back,
+                R.drawable.rect_3_back,
+                R.drawable.rect_4_back,
+                R.drawable.rect_5_back,
+                R.drawable.rect_6_back,
+                R.drawable.rect_7_back,
+                R.drawable.rect_8_back,
+                R.drawable.rect_9_back,
+                R.drawable.rect_10_back,
+                R.drawable.rect_11_back,
+                R.drawable.rect_12_back,
+                R.drawable.rect_13_back,
+                R.drawable.rect_14_back,
+                R.drawable.rect_15_back);
+        pieceFrontDrawables = getDrawables(res, theme,
+                R.drawable.rect_1_front,
+                R.drawable.rect_2_front,
+                R.drawable.rect_3_front,
+                R.drawable.rect_4_front,
+                R.drawable.rect_5_front,
+                R.drawable.rect_6_front,
+                R.drawable.rect_7_front,
+                R.drawable.rect_8_front,
+                R.drawable.rect_9_front,
+                R.drawable.rect_10_front,
+                R.drawable.rect_11_front,
+                R.drawable.rect_12_front,
+                R.drawable.rect_13_front,
+                R.drawable.rect_14_front,
+                R.drawable.rect_15_front);
         overlapHorizDrawable = ResourcesCompat.getDrawable(res, R.drawable.rect_overlap_horiz, theme);
         overlapVertiDrawable = ResourcesCompat.getDrawable(res, R.drawable.rect_overlap_verti, theme);
 
@@ -53,6 +65,15 @@ class RectGridDrawer implements GridDrawer {
 
         opaquePaint = new Paint();
         opaquePaint.setStyle(Paint.Style.FILL);
+    }
+
+    private static Drawable[] getDrawables(
+            Resources res, @Nullable Resources.Theme theme, int... resourceIds) {
+        Drawable[] drawables = new Drawable[resourceIds.length];
+        for (int i = 0; i < drawables.length; ++i) {
+            drawables[i] = ResourcesCompat.getDrawable(res, resourceIds[i], theme);
+        }
+        return drawables;
     }
 
     @Override
@@ -154,23 +175,12 @@ class RectGridDrawer implements GridDrawer {
     private void drawPiece(
             Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, int gridX, int gridY,
             float pixelOffsetX, float pixelOffsetY, @Nullable ColorFilter colorFilter) {
-        if (pieceIndex >= 0 && pieceIndex < pieceDrawables.length) {
-            Drawable pieceDrawable = pieceDrawables[pieceIndex];
-            if (pieceDrawable != null) {
-                drawDrawable(canvas, drawDimensions, pieceDrawable,
-                        gridX - 0.5f, gridY - 0.5f, gridX + 1.5f, gridY + 1.5f,
-                        pixelOffsetX, pixelOffsetY, colorFilter);
-                return;
-            }
-        }
-        // Fallback: draw piece as a colored square
-        opaquePaint.setColor(Color.rgb(255 * pieceIndex / 14, 0, 255 - 255 * pieceIndex / 14));
-        canvas.drawRect(
-                gridToPixelX(drawDimensions, gridX) + pixelOffsetX,
-                gridToPixelY(drawDimensions, gridY) + pixelOffsetY,
-                gridToPixelX(drawDimensions, gridX + 1) + pixelOffsetX,
-                gridToPixelY(drawDimensions, gridY + 1) + pixelOffsetY,
-                opaquePaint);
+        drawDrawable(canvas, drawDimensions, pieceBackDrawables[pieceIndex],
+                gridX - 0.5f, gridY - 0.5f, gridX + 1.5f, gridY + 1.5f,
+                pixelOffsetX, pixelOffsetY, colorFilter);
+        drawDrawable(canvas, drawDimensions, pieceFrontDrawables[pieceIndex],
+                gridX - 0.5f, gridY - 0.5f, gridX + 1.5f, gridY + 1.5f,
+                pixelOffsetX, pixelOffsetY, null);
     }
 
     private static void drawDrawable(

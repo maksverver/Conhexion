@@ -10,18 +10,5 @@
         android:pathData="M50,50m-0,-35.355a35.355,35.355 0,1 1,-0 70.71a35.355,35.355 0,1 1,-0 -70.71"
         android:fillColor="#8f008f"
         android:fillAlpha="1"/>
-    <path
-        android:pathData="m60,25l-0,50l-20,0L40,25l20,0"
-        android:fillColor="#ff8000"
-        android:fillAlpha="1"/>
-    <path
-        android:pathData="m60,25l-0,50m-20,0L40,25"
-        android:strokeAlpha="1"
-        android:strokeLineJoin="miter"
-        android:strokeWidth="2"
-        android:fillColor="#00000000"
-        android:strokeColor="#ffff00"
-        android:fillAlpha="1"
-        android:strokeLineCap="butt"/>
   </group>
 </vector>
