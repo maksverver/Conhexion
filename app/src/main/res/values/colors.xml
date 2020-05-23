@@ -4,9 +4,23 @@
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
 
+    <!-- BaseGridView -->
     <color name="gridBackground">#000000</color>
-    <color name="rectGridGridLines">#303030</color>
-    <color name="hexGridGridLines">#303030</color>
 
-    <!-- maybe todo: colors used by for vector drawables? -->
+    <!-- RectGridDrawer -->
+    <color name="rectGridGridLines">#303030</color>
+    <color name="rectOverlapError">#ff0000</color>
+    <color name="rectTileBackground">#8f008f</color>
+    <color name="rectBeamTop">#ff8000</color>
+    <color name="rectBeamBottom">#994d00</color>
+    <color name="rectBeamLeft">#e57400</color>
+    <color name="rectBeamRight">#cc6700</color>
+
+    <!-- HexGridDrawer -->
+    <color name="hexGridGridLines">#303030</color>
+    <color name="hexOverlapError">#ff0000</color>
+    <color name="hexTileBackground">#8f008f</color>
+    <color name="hexBeamTop">#ff8000</color>
+    <color name="hexBeamLeft">#994d00</color>
+    <color name="hexBeamRight">#cc6700</color>
 </resources>

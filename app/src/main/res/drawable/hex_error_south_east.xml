@@ -5,6 +5,6 @@
     android:viewportHeight="100">
   <path
       android:pathData="M100,50A50,50 0,0 0,75 93.301A50,50 0,0 0,100 50z"
-      android:fillColor="#ff0000"
+      android:fillColor="@color/hexOverlapError"
       android:fillAlpha="1"/>
 </vector>

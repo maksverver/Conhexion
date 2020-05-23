@@ -5,10 +5,10 @@
     android:viewportHeight="100">
   <path
       android:pathData="M50,6.699V50L62.99,42.5V6.699Z"
-      android:fillColor="#cc6700"
+      android:fillColor="@color/hexBeamRight"
       android:fillAlpha="1"/>
   <path
       android:pathData="M50,6.699V50L37.01,42.5V6.699Z"
-      android:fillColor="#994d00"
+      android:fillColor="@color/hexBeamLeft"
       android:fillAlpha="1"/>
 </vector>
