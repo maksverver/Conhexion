@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="hex-south-west.svg">
+   sodipodi:docname="hex-beam-north-east.svg">
   <defs
      id="defs2">
     <inkscape:perspective
@@ -35,7 +35,7 @@
      inkscape:cx="22.030236"
      inkscape:cy="54.243001"
      inkscape:document-units="px"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="layer7"
      inkscape:document-rotation="0"
      showgrid="true"
      units="px"
@@ -66,18 +66,18 @@
   </metadata>
   <g
      inkscape:groupmode="layer"
-     id="layer6"
-     inkscape:label="SouthWest"
+     id="layer7"
+     inkscape:label="NorthEeast"
      style="display:inline">
     <path
        sodipodi:nodetypes="ccccc"
-       style="display:inline;fill:#ff8100;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 12.5,71.650635 50,50 37.009618,42.499999 6.0048091,60.400634 Z"
-       id="path1469-3-3-1" />
+       id="path1749-3"
+       d="M 87.5,28.349365 62.990381,42.5 50,34.999999 81.004809,17.099364 Z"
+       style="display:inline;opacity:1;fill:#ff8100;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <path
-       sodipodi:nodetypes="ccccc"
-       style="display:inline;fill:#cc6700;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 12.5,71.650635 50,50 V 65.000001 L 18.995191,82.900636 Z"
-       id="path1469-3-6-70-0-2" />
+       style="display:inline;opacity:1;fill:#cc6700;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 87.5,28.349365 62.990381,42.5 v 15.000001 l 31.00481,-17.900635 z"
+       id="path1749-97-6"
+       sodipodi:nodetypes="ccccc" />
   </g>
 </svg>

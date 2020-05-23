@@ -43,12 +43,12 @@ class HexGridDrawer implements GridDrawer {
         tileCenter = ResourcesCompat.getDrawable(res, R.drawable.hex_center, theme);
 
         tileBeams = new EnumMap<>(HexDirection.class);
-        tileBeams.put(HexDirection.NORTH, ResourcesCompat.getDrawable(res, R.drawable.hex_north, theme));
-        tileBeams.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_north_east, theme));
-        tileBeams.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_south_east, theme));
-        tileBeams.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_south, theme));
-        tileBeams.put(HexDirection.SOUTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_south_west, theme));
-        tileBeams.put(HexDirection.NORTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_north_west, theme));
+        tileBeams.put(HexDirection.NORTH, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_north, theme));
+        tileBeams.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_north_east, theme));
+        tileBeams.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_south_east, theme));
+        tileBeams.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_south, theme));
+        tileBeams.put(HexDirection.SOUTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_south_west, theme));
+        tileBeams.put(HexDirection.NORTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_north_west, theme));
 
         tileBacksides = new EnumMap<>(HexDirection.class);
         tileBacksides.put(HexDirection.NORTH, ResourcesCompat.getDrawable(res, R.drawable.hex_back_north, theme));

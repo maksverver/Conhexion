@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="hex-south-east.svg">
+   sodipodi:docname="hex-beam-north.svg">
   <defs
      id="defs2">
     <inkscape:perspective
@@ -35,7 +35,7 @@
      inkscape:cx="22.030236"
      inkscape:cy="54.243001"
      inkscape:document-units="px"
-     inkscape:current-layer="layer9"
+     inkscape:current-layer="layer3"
      inkscape:document-rotation="0"
      showgrid="true"
      units="px"
@@ -66,18 +66,18 @@
   </metadata>
   <g
      inkscape:groupmode="layer"
-     id="layer9"
-     inkscape:label="SouthEast"
+     id="layer3"
+     inkscape:label="North"
      style="display:inline">
     <path
-       id="path1469-3-3-19"
-       d="M 87.5,71.650635 50,50 v 15.000001 l 31.004809,17.900635 z"
-       style="display:inline;fill:#994d00;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="path1469-3-3"
+       d="M 50,6.6987298 V 50 L 62.990382,42.5 V 6.6987298 Z"
+       style="fill:#cc6700;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        sodipodi:nodetypes="ccccc" />
     <path
-       id="path1469-3-6-70-0-4"
-       d="M 87.5,71.650635 50,50 62.990382,42.499999 93.995191,60.400634 Z"
-       style="display:inline;fill:#ff8000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="path1469-3-6-70-0"
+       d="M 50,6.6987298 V 50 L 37.009618,42.5 V 6.6987298 Z"
+       style="fill:#994d00;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        sodipodi:nodetypes="ccccc" />
   </g>
 </svg>
