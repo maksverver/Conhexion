@@ -1,4 +1,3 @@
-  - Increase contrast of puzzle piece colors
   - App menu:
       - option to show tutorial
       - option to reset current puzzle (confirm!)

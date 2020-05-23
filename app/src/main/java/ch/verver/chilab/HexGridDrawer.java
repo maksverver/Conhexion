@@ -157,7 +157,7 @@ class HexGridDrawer implements GridDrawer {
 
         // Draw dragged pieces last, so they're on top of everything else.
         if (draggedPieces != 0) {
-            ColorFilter colorFilter = Util.isMultiDrag(draggedPieces) ? ColorFilters.NEGATIVE : null;
+            ColorFilter colorFilter = Util.isMultiDrag(draggedPieces) ? ColorFilters.LIGHTER : null;
             for (int i = 0; i < n; ++i) {
                 if (Util.isDragged(draggedPieces, i)) {
                     drawPiece(canvas, drawDimensions, i, piecePositions.get(i),

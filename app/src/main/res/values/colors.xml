@@ -1,26 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#ff8000</color>
+    <color name="colorPrimaryDark">#cc5500</color>
+    <color name="colorAccent">#ffaa00</color>
 
     <!-- BaseGridView -->
     <color name="gridBackground">#000000</color>
 
     <!-- RectGridDrawer -->
-    <color name="rectGridGridLines">#303030</color>
     <color name="rectOverlapError">#ff0000</color>
+    <!-- Original purple and orange -->
+    <!--
+    <color name="rectGridGridLines">#303030</color>
     <color name="rectTileBackground">#8f008f</color>
     <color name="rectBeamTop">#ff8000</color>
     <color name="rectBeamBottom">#994d00</color>
     <color name="rectBeamLeft">#e57400</color>
     <color name="rectBeamRight">#cc6700</color>
+    -->
+    <!-- Blue and orange -->
+    <color name="rectGridGridLines">#202040</color>
+    <color name="rectTileBackground">#004d99</color>
+    <color name="rectBeamTop">#ffaa00</color>
+    <color name="rectBeamBottom">#cc5500</color>
+    <color name="rectBeamLeft">#ff8000</color>
+    <color name="rectBeamRight">#ff9500</color>
+
 
     <!-- HexGridDrawer -->
-    <color name="hexGridGridLines">#303030</color>
     <color name="hexOverlapError">#ff0000</color>
+    <!-- Original purple and orange -->
+    <!--
+    <color name="rectGridGridLines">#303030</color>
     <color name="hexTileBackground">#8f008f</color>
     <color name="hexBeamTop">#ff8000</color>
     <color name="hexBeamLeft">#994d00</color>
     <color name="hexBeamRight">#cc6700</color>
+    -->
+    <!-- Blue and orange -->
+    <color name="hexGridGridLines">#202040</color>
+    <color name="hexTileBackground">#004d99</color>
+    <color name="hexBeamTop">#ffaa00</color>
+    <color name="hexBeamLeft">#cc5500</color>
+    <color name="hexBeamRight">#ff8000</color>
+    <!-- High contrast green! -->
+    <!--
+    <color name="hexTileBackground">#aa0099</color>
+    <color name="hexBeamTop">#cfe500</color>
+    <color name="hexBeamLeft">#b8cc00</color>
+    <color name="hexBeamRight">#8a9900</color>
+    -->
 </resources>

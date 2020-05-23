@@ -2,7 +2,6 @@ package ch.verver.chilab;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PointF;
@@ -139,7 +138,7 @@ class RectGridDrawer implements GridDrawer {
 
         // Draw dragged pieces last, to ensure they are displayed on top!
         if (draggedPieces != 0) {
-            ColorFilter colorFilter = Util.isMultiDrag(draggedPieces) ? ColorFilters.NEGATIVE : null;
+            ColorFilter colorFilter = Util.isMultiDrag(draggedPieces) ? ColorFilters.LIGHTER : null;
             for (int i = 0; i < n; ++i) {
                 if (Util.isDragged(draggedPieces, i)) {
                     Pos pos = piecePositions.get(i);
