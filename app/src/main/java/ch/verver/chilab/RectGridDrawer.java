@@ -110,7 +110,7 @@ class RectGridDrawer implements GridDrawer {
         for (int i = 0; i < n; ++i) {
             if (!Util.isDragged(draggedPieces, i)) {
                 Pos pos = piecePositions.get(i);
-                drawPiece(canvas, drawDimensions, i, pos.x, pos.y, 0.0f, 0.0f, null);
+                drawPiece(canvas, drawDimensions, i, pos.x, pos.y, 0.0f, 0.0f, null, null);
             }
         }
 
@@ -141,9 +141,21 @@ class RectGridDrawer implements GridDrawer {
             for (int i = 0; i < n; ++i) {
                 if (Util.isDragged(draggedPieces, i)) {
                     Pos pos = piecePositions.get(i);
-                    drawPiece(canvas, drawDimensions, i, pos.x, pos.y, dragDeltaX, dragDeltaY, ColorFilters.LIGHTER);
+                    drawPiece(canvas, drawDimensions, i, pos.x, pos.y, dragDeltaX, dragDeltaY, ColorFilters.LIGHTER, null);
                 }
             }
+        }
+    }
+
+    @Override
+    public void animateVictory(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
+                               float frameTime) {
+        drawGridLines(canvas, drawDimensions);
+
+        ColorFilter colorFilter = ColorFilters.hueShift(frameTime / 4.0f);
+        for (int i = 0, n = piecePositions.size(); i < n; ++i) {
+            Pos pos = piecePositions.get(i);
+            drawPiece(canvas, drawDimensions, i, pos.x, pos.y, 0.0f, 0.0f, colorFilter, colorFilter);
         }
     }
 
@@ -172,13 +184,14 @@ class RectGridDrawer implements GridDrawer {
 
     private void drawPiece(
             Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, int gridX, int gridY,
-            float pixelOffsetX, float pixelOffsetY, @Nullable ColorFilter colorFilter) {
+            float pixelOffsetX, float pixelOffsetY,
+            @Nullable ColorFilter backColorFilter, @Nullable ColorFilter frontColorFilter) {
         drawDrawable(canvas, drawDimensions, pieceBackDrawables[pieceIndex],
                 gridX - 0.5f, gridY - 0.5f, gridX + 1.5f, gridY + 1.5f,
-                pixelOffsetX, pixelOffsetY, colorFilter);
+                pixelOffsetX, pixelOffsetY, backColorFilter);
         drawDrawable(canvas, drawDimensions, pieceFrontDrawables[pieceIndex],
                 gridX - 0.5f, gridY - 0.5f, gridX + 1.5f, gridY + 1.5f,
-                pixelOffsetX, pixelOffsetY, null);
+                pixelOffsetX, pixelOffsetY, frontColorFilter);
     }
 
     private static void drawDrawable(

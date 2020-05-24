@@ -46,4 +46,12 @@ interface GridDrawer {
     void draw(Canvas canvas, DrawDimensions drawDimensions,
               ReadonlyPiecePositionIndex piecePositions,
               long draggedPieces, float dragDeltaX, float dragDeltaY);
+
+    /**
+     * Similar to {@link #draw}, but used to animate the view when the puzzle is solved.
+     *
+     * <p>@{code frameTime} is the time in seconds which will run from 0 to 12 currently.
+     */
+    void animateVictory(Canvas canvas, DrawDimensions drawDimensions,
+                        ReadonlyPiecePositionIndex piecePositions, float frameTime);
 }

@@ -38,4 +38,12 @@ public class HexPuzzleFragment extends Fragment {
         }
         return view;
     }
+
+    HexGridView getHexGridView() {
+        View view = getView();
+        if (view == null) {
+            return null;
+        }
+        return view.findViewById(R.id.hex_grid_view);
+    }
 }

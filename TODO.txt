@@ -2,9 +2,7 @@
       - option to show tutorial
       - option to reset current puzzle (confirm!)
       - option to switch between rect/hex game
-  - Victory animation after solving!
-      - solving rect puzzle should get you towards hex puzzle
-      - solving hex puzzle should allow you to reset it
+  - "Replay tutorial" and "Replay puzzle" buttons should ask to reset pieces
   - Tutorial page(s) that you can swipe through.
   - Allow BaseGridView to take up more space (especially useful in horizontal mode):
         - Hide app bar / replace with a floating button?
@@ -12,6 +10,7 @@
           https://developer.android.com/training/system-ui/immersive
   - Option to rotate hex grid by 60 degrees?
   - Better launcher icon
+  - Maybe: rename to avoid spoilers? (But include a link / give some credits!)
 
 Cleanup:
   - Maybe: refactor AppState into a proper ViewModel with LiveData?
@@ -28,6 +27,7 @@ Stretch goals:
   - Fancy fragment transition animations
   - Light/dark mode
   - Ability to name & upload your solution
+  - Google Analytics
 
 Non-goals:
   - Haptic feedback when selecting pieces. (I implemented it but I didn't like how it felt.)

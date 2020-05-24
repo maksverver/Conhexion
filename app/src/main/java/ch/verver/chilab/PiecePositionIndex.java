@@ -30,6 +30,11 @@ class PiecePositionIndex implements ReadonlyPiecePositionIndex {
         this.index = new HashMap<>();
     }
 
+    /** Creates a piece position index with the given initial piece positions. */
+    public PiecePositionIndex(List<Pos> positions) {
+        assign(positions);
+    }
+
     /** Creates a deep copy of on existing instance. */
     public PiecePositionIndex(PiecePositionIndex oldIndex) {
         assign(oldIndex.positions);

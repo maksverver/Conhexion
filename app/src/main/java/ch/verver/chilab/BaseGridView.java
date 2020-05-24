@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -67,10 +68,16 @@ abstract class BaseGridView extends View {
     private float zoomFactor = MIN_ZOOM_FACTOR;
 
     // Current drag state. null when nothing is being dragged.
-    @Nullable private DragState dragState = null;
+    private @Nullable DragState dragState = null;
 
     // Callback called whenever the piece positions change.
-    @Nullable private PiecePositionsChangedListener piecePositionsChangedListener = null;
+    private @Nullable PiecePositionsChangedListener piecePositionsChangedListener = null;
+
+    // Determines whether the view allows panning, zooming, and moving pieces.
+    private boolean editable = true;
+
+    // When non-null, a victory animation is in progress. See startVictoryAnimation()
+    private @Nullable VictoryAnimator victoryAnimator = null;
 
     public interface PiecePositionsChangedListener {
         void piecePositionsChanged(BaseGridView baseGridView);
@@ -127,15 +134,30 @@ abstract class BaseGridView extends View {
         this.piecePositionsChangedListener = piecePositionsChangedListener;
     }
 
+    public void setEditable(boolean newEditable) {
+        if (editable == newEditable) {
+            return;
+        }
+        editable = newEditable;
+        cancelDrag();
+        invalidate();
+    }
+
+    public void startVictoryAnimation() {
+        victoryAnimator = new VictoryAnimator();
+    }
+
     @Override
     final public boolean onTouchEvent(MotionEvent event) {
         boolean handled = super.onTouchEvent(event);
-        // Handle pinch-to-zoom gesture.
-        handled |= scaleGestureDetector.onTouchEvent(event);
-        if (scaleGestureDetector.isInProgress()) {
-            cancelDrag();
-        } else {
-            handled |= detectDrag(event);
+        if (editable) {
+            // Handle pinch-to-zoom gesture.
+            handled |= scaleGestureDetector.onTouchEvent(event);
+            if (scaleGestureDetector.isInProgress()) {
+                cancelDrag();
+            } else {
+                handled |= detectDrag(event);
+            }
         }
         return handled;
     }
@@ -164,8 +186,18 @@ abstract class BaseGridView extends View {
             dragDeltaX = dragState.deltaX;
             dragDeltaY = dragState.deltaY;
         }
-        gridDrawer.draw(canvas, drawDimensions, readonlyPiecePositions,
-                draggedPieces, dragDeltaX, dragDeltaY);
+        if (victoryAnimator == null) {
+            gridDrawer.draw(canvas, drawDimensions, readonlyPiecePositions,
+                    draggedPieces, dragDeltaX, dragDeltaY);
+        } else {
+            // Zoom out during victory animation.
+            // Maximum duration: log(10) / log(0.75) =~ 8 seconds to zoom out from 10 to 1.
+            if (zoomFactor > MIN_ZOOM_FACTOR && victoryAnimator.frameDelay > 0) {
+                // No need to use Math.min() since setZoomFactor() will clamp the zoom factor.
+                setZoomFactor((float) (zoomFactor * Math.pow(0.75f, victoryAnimator.frameDelay)));
+            }
+            gridDrawer.animateVictory(canvas, drawDimensions, readonlyPiecePositions, victoryAnimator.frameTime);
+        }
     }
 
     @Override
@@ -494,6 +526,40 @@ abstract class BaseGridView extends View {
             view.zoomFactor = zoomFactor;
             view.zoomCx = zoomCx;
             view.zoomCy = zoomCy;
+        }
+    }
+
+    private class VictoryAnimator implements Runnable {
+        private static final int TARGET_FPS = 30;
+        private static final float DURATION = 12.0f;  // seconds
+
+        final long startTimeMillis;
+        final boolean wasEditable;
+
+        float frameTime = 0.0f;
+        float frameDelay = 0.0f;
+
+        public VictoryAnimator() {
+            startTimeMillis = SystemClock.elapsedRealtime();
+            wasEditable = editable;
+            setEditable(false);
+            handler.post(this);
+        }
+
+        @Override
+        public void run() {
+            float newFrameTime = (SystemClock.elapsedRealtime() - startTimeMillis) * 1e-3f;
+            frameDelay = newFrameTime - frameTime;
+            frameTime = newFrameTime;
+
+            if (frameTime < DURATION) {
+                handler.postDelayed(this, 1000 / TARGET_FPS);
+            } else {
+                // End animation
+                victoryAnimator = null;
+                setEditable(wasEditable);
+            }
+            invalidate();
         }
     }
 }

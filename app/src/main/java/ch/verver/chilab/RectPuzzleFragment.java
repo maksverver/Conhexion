@@ -38,4 +38,13 @@ public class RectPuzzleFragment extends Fragment {
         }
         return view;
     }
+
+    @Nullable
+    public RectGridView getRectGridView() {
+        View view = getView();
+        if (view == null) {
+            return null;
+        }
+        return view.findViewById(R.id.rect_grid_view);
+    }
 }

@@ -148,7 +148,7 @@ class HexGridDrawer implements GridDrawer {
         // Draw pieces (except dragged one)
         for (int i = 0; i < n; ++i) {
             if (!Util.isDragged(draggedPieces, i)) {
-                drawPiece(canvas, drawDimensions, i, piecePositions.get(i), 0.0f, 0.0f, null);
+                drawPiece(canvas, drawDimensions, i, piecePositions.get(i), 0.0f, 0.0f, null, null);
             }
         }
 
@@ -160,9 +160,18 @@ class HexGridDrawer implements GridDrawer {
             for (int i = 0; i < n; ++i) {
                 if (Util.isDragged(draggedPieces, i)) {
                     drawPiece(canvas, drawDimensions, i, piecePositions.get(i),
-                            dragDeltaX, dragDeltaY, ColorFilters.LIGHTER);
+                            dragDeltaX, dragDeltaY, ColorFilters.LIGHTER, null);
                 }
             }
+        }
+    }
+
+    @Override
+    public void animateVictory(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions, float frameTime) {
+        drawGridLines(canvas, drawDimensions);
+        ColorFilter colorFilter = ColorFilters.hueShift(frameTime / 4.0f);
+        for (int i = 0, n = piecePositions.size(); i < n; ++i) {
+            drawPiece(canvas, drawDimensions, i, piecePositions.get(i), 0.0f, 0.0f, colorFilter, colorFilter);
         }
     }
 
@@ -230,23 +239,24 @@ class HexGridDrawer implements GridDrawer {
     }
 
     private void drawPiece(Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, Pos pos,
-                           float dragOffsetX, float dragOffsetY, @Nullable ColorFilter colorFilter) {
+                           float dragOffsetX, float dragOffsetY,
+                           @Nullable ColorFilter backColorFilter, @Nullable ColorFilter frontColorFilter) {
         Rect bounds = getTileBounds(drawDimensions, pos, dragOffsetX, dragOffsetY);
 
-        draw(canvas, bounds, tileBackground, colorFilter);
+        draw(canvas, bounds, tileBackground, backColorFilter);
 
         for (HexDirection direction : BEAM_DRAW_ORDER) {
             if (!direction.hasPath(pieceIndex)) {
-                draw(canvas, bounds, tileBacksides.get(direction), colorFilter);
+                draw(canvas, bounds, tileBacksides.get(direction), backColorFilter);
             }
         }
 
-        draw(canvas, bounds, tileCenter, null);
+        draw(canvas, bounds, tileCenter, frontColorFilter);
 
         // Order in which beams are drawn matters! We want to draw back-to-front.
         for (HexDirection direction : BEAM_DRAW_ORDER) {
             if (direction.hasPath(pieceIndex)) {
-                draw(canvas, bounds, tileBeams.get(direction), null);
+                draw(canvas, bounds, tileBeams.get(direction), frontColorFilter);
             }
         }
     }
