@@ -1,6 +1,7 @@
 package ch.verver.chilab;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -16,10 +17,6 @@ public class MainActivity extends AppCompatActivity
         implements HexPiecePositionsChangedListener, RectPiecePositionsChangedListener, View.OnClickListener {
 
     private AppState appState;
-    private RectPuzzleFragment rectPuzzleFragment;
-    private RectPuzzleSolvedFragment rectPuzzleSolvedFragment;
-    private HexPuzzleFragment hexPuzzleFragment;
-    private HexPuzzleSolvedFragment hexPuzzleSolvedFragment;
 
     private Solution.Progress rectPuzzleProgress;
     private Solution.Progress hexPuzzleProgress;
@@ -41,27 +38,13 @@ public class MainActivity extends AppCompatActivity
             appState.restoreFromIntentExtras(getIntent().getExtras());
         }
 
-        rectPuzzleFragment = (RectPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.RECT_PUZZLE.name());
-        if (rectPuzzleFragment == null) {
-            rectPuzzleFragment = new RectPuzzleFragment(appState.getRectPuzzlePiecePositions());
+        FragmentId activeFragmentId = appState.getActiveFragmentId();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(activeFragmentId.name());
+        if (fragment != null && fragment.isVisible()) {
+            LogUtil.i("MainActivity: reusing existing fragment");
+        } else {
+            setActiveFragment(activeFragmentId);
         }
-
-        rectPuzzleSolvedFragment = (RectPuzzleSolvedFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.RECT_PUZZLE_SOLVED.name());
-        if (rectPuzzleSolvedFragment == null) {
-            rectPuzzleSolvedFragment = new RectPuzzleSolvedFragment();
-        }
-
-        hexPuzzleFragment = (HexPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.HEX_PUZZLE.name());
-        if (hexPuzzleFragment == null) {
-            hexPuzzleFragment = new HexPuzzleFragment(appState.getHexPuzzlePiecePositions());
-        }
-
-        hexPuzzleSolvedFragment = (HexPuzzleSolvedFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.HEX_PUZZLE_SOLVED.name());
-        if (hexPuzzleSolvedFragment == null) {
-            hexPuzzleSolvedFragment = new HexPuzzleSolvedFragment();
-        }
-
-        setActiveFragment(appState.getActiveFragmentId());
     }
 
     @Override
@@ -115,7 +98,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setActiveFragment(FragmentId newFragmentId, int enterAnimId, int exitAnimId) {
-        Fragment newFragment = getFragment(newFragmentId);
+        Fragment newFragment = createFragment(newFragmentId);
         if (newFragment == null) {
             LogUtil.e("Cannot switch to nonexistent fragment %s!", newFragmentId);
             return;
@@ -127,14 +110,6 @@ public class MainActivity extends AppCompatActivity
             transaction.setCustomAnimations(enterAnimId, exitAnimId);
         } else {
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        }
-        // Don't add the first transaction to the back-stack, otherwise pressing "Back" while the
-        // very first fragment is being shown will transition to an empty activity!
-        if (!fragmentManager.getFragments().isEmpty()) {
-            // Add fragment to the back stack. I don't really want to do this, but without it the
-            // app crashes with "Restarter must be created only during owner's initialization stage"
-            // if a transaction is started while the previous one is still in progress.
-            transaction.addToBackStack(newFragmentId.name());
         }
         transaction.replace(R.id.fragment_container, newFragment, newFragmentId.name());
         transaction.commit();
@@ -148,6 +123,14 @@ public class MainActivity extends AppCompatActivity
         updateRectPuzzleProgress();
         if (rectPuzzleProgress.isSolved() && !wasSolved) {
             LogUtil.i("Rect puzzle is solved!");
+            RectPuzzleFragment rectPuzzleFragment =
+                    (RectPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.RECT_PUZZLE.name());
+            if (rectPuzzleFragment != null) {
+                RectGridView rectGridView = rectPuzzleFragment.getRectGridView();
+                if (rectGridView != null) {
+                    rectGridView.startVictoryAnimation();
+                }
+            }
             rectPuzzleFragment.getRectGridView().startVictoryAnimation();
             setActiveFragment(FragmentId.RECT_PUZZLE_SOLVED, R.anim.puzzle_solved_fade_in, R.anim.puzzle_solved_fade_out);
         }
@@ -160,7 +143,14 @@ public class MainActivity extends AppCompatActivity
         updateHexPuzzleProgress();
         if (hexPuzzleProgress.isSolved() && !wasSolved) {
             LogUtil.i("Hex puzzle is solved!");
-            hexPuzzleFragment.getHexGridView().startVictoryAnimation();
+            HexPuzzleFragment hexPuzzleFragment =
+                    (HexPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.HEX_PUZZLE.name());
+            if (hexPuzzleFragment != null) {
+                HexGridView hexGridView = hexPuzzleFragment.getHexGridView();
+                if (hexGridView != null) {
+                    hexGridView.startVictoryAnimation();
+                }
+            }
             setActiveFragment(FragmentId.HEX_PUZZLE_SOLVED, R.anim.puzzle_solved_fade_in, R.anim.puzzle_solved_fade_out);
         }
     }
@@ -175,16 +165,17 @@ public class MainActivity extends AppCompatActivity
         hexPuzzleProgress = Solution.calculateProgress(piecePositions, HexDirection.values());
     }
 
-    private Fragment getFragment(FragmentId id) {
+    @Nullable
+    private Fragment createFragment(FragmentId id) {
         switch (id) {
             case RECT_PUZZLE:
-                return rectPuzzleFragment;
+                return new RectPuzzleFragment(appState.getRectPuzzlePiecePositions());
             case RECT_PUZZLE_SOLVED:
-                return rectPuzzleSolvedFragment;
+                return new RectPuzzleSolvedFragment();
             case HEX_PUZZLE:
-                return hexPuzzleFragment;
+                return new HexPuzzleFragment(appState.getHexPuzzlePiecePositions());
             case HEX_PUZZLE_SOLVED:
-                return hexPuzzleSolvedFragment;
+                return new HexPuzzleSolvedFragment();
         }
         return null;
     }
