@@ -18,6 +18,7 @@ public final class ImmutableList<T> extends AbstractList<T> implements List<T>, 
     }
 
     /** Returns an immutable list with the elements passed as arguments. */
+    @SafeVarargs
     public static <T> ImmutableList<T> of(T... elements) {
         // Could make this more efficient for small number of arguments by providing overloads which
         // take 0, 1, 2, etc. arguments.
