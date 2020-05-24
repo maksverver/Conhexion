@@ -89,7 +89,7 @@ class GroupFinder {
 
     private int countGroups() {
         int groupCount = 0;
-        for (int i = 0, n = piecePositionIndex.size(); i < n; ++n) {
+        for (int i = 0, n = piecePositionIndex.size(); i < n; ++i) {
             if (addToQueue(i, null)) {
                 ++groupCount;
                 processQueue();
