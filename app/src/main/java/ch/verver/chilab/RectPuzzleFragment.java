@@ -14,29 +14,16 @@ import java.util.List;
 
 public class RectPuzzleFragment extends Fragment {
 
-    private @Nullable List<Pos> initialPiecePositions;
-
     // Required constructor -- called by the framework.
     public RectPuzzleFragment() {}
-
-    public RectPuzzleFragment(List<Pos> initialPiecePositions) {
-        this.initialPiecePositions = initialPiecePositions;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_rect_puzzle, container, false);
-        RectGridView rectGridView = view.findViewById(R.id.rect_grid_view);
-        if (initialPiecePositions != null) {
-            rectGridView.setPiecePositions(initialPiecePositions);
-            initialPiecePositions = null;
-        }
-        FragmentActivity activity = getActivity();
-        if (activity instanceof RectPiecePositionsChangedListener) {
-            rectGridView.setPiecePositionsChangedListener((RectPiecePositionsChangedListener) activity);
-        }
-        return view;
+        View rootView = inflater.inflate(R.layout.fragment_rect_puzzle, container, false);
+        RectGridView rectGridView = rootView.findViewById(R.id.rect_grid_view);
+        rectGridView.setPiecePositionsLiveData(this, App.getAppState().getRectPuzzlePiecePositions());
+        return rootView;
     }
 
     @Nullable

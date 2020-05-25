@@ -1,5 +1,7 @@
 package ch.verver.chilab;
 
+import java.util.List;
+
 /** Utility class to determine whether a puzzle is solved. */
 class Solution {
 
@@ -44,6 +46,10 @@ class Solution {
         public boolean isSolved() {
             return groupCount == 1 && disconnectionCount == 0 && overlapCount == 0;
         }
+    }
+
+    static Progress calculateProgress(List<Pos> piecePositions, Direction[] directions) {
+        return calculateProgress(new PiecePositionIndex(piecePositions), directions);
     }
 
     static Progress calculateProgress(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {

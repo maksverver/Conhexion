@@ -28,6 +28,10 @@ abstract class HexPuzzle {
         return points;
     }
 
+    public static boolean validate(@Nullable List<Pos> positions) {
+        return positions != null && Util.validatePositions(positions, PIECE_COUNT);
+    }
+
     public static String encode(List<Pos> positions) {
         return StateCodec.encodePositions(positions);
     }
@@ -41,7 +45,7 @@ abstract class HexPuzzle {
             LogUtil.w(e, "Failed to decode state");
             return null;
         }
-        if (!Util.validatePositions(positions, PIECE_COUNT)) {
+        if (!validate(positions)) {
             return null;
         }
         return positions;

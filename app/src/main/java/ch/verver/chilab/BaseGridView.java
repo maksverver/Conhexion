@@ -16,9 +16,9 @@ import android.view.View;
 import android.view.ViewConfiguration;
 
 import androidx.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 /**
  * Base class for grid-based puzzle views.
@@ -42,6 +42,23 @@ abstract class BaseGridView extends View {
     private final Handler handler = new Handler();
     private final GridDrawer gridDrawer;
     private final ScaleGestureDetector scaleGestureDetector;
+
+    private MutableLiveData<ImmutableList<Pos>> piecePositionsLiveData = null;
+    private Observer<ImmutableList<Pos>> piecePositionsLiveDataObserver = new Observer<ImmutableList<Pos>>() {
+        @Override
+        public void onChanged(ImmutableList<Pos> positions) {
+            cancelDrag();
+            piecePositions.assign(positions);
+            Rect newGridBounds = piecePositions.getBoundingRect();
+            if (!gridBounds.equals(newGridBounds)) {
+                // Grid bounding box has changed!
+                gridBounds = newGridBounds;
+                updateCanvasBounds();
+                updateDrawDimensions();
+            }
+            invalidate();
+        }
+    };
 
     // Current piece positions
     private final PiecePositionIndex piecePositions = new PiecePositionIndex();
@@ -70,18 +87,11 @@ abstract class BaseGridView extends View {
     // Current drag state. null when nothing is being dragged.
     private @Nullable DragState dragState = null;
 
-    // Callback called whenever the piece positions change.
-    private @Nullable PiecePositionsChangedListener piecePositionsChangedListener = null;
-
     // Determines whether the view allows panning, zooming, and moving pieces.
     private boolean editable = true;
 
     // When non-null, a victory animation is in progress. See startVictoryAnimation()
     private @Nullable VictoryAnimator victoryAnimator = null;
-
-    public interface PiecePositionsChangedListener {
-        void piecePositionsChanged(BaseGridView baseGridView);
-    }
 
     public BaseGridView(Context context, GridDrawer gridDrawer) {
         super(context);
@@ -115,23 +125,12 @@ abstract class BaseGridView extends View {
         updateCanvasBounds();
     }
 
-    public ImmutableList<Pos> getPiecePositions() {
-        return piecePositions.toImmutableList();
-    }
-
-    public PiecePositionIndex getPiecePositionIndex() {
-        return new PiecePositionIndex(piecePositions);
-    }
-
-    public void setPiecePositions(List<Pos> positions) {
-        cancelDrag();
-        piecePositions.assign(positions);
-        piecePositionsChanged();
-        invalidate();
-    }
-
-    public void setPiecePositionsChangedListener(PiecePositionsChangedListener piecePositionsChangedListener) {
-        this.piecePositionsChangedListener = piecePositionsChangedListener;
+    public void setPiecePositionsLiveData(LifecycleOwner lifecycleOwner, MutableLiveData<ImmutableList<Pos>> newData) {
+        if (piecePositionsLiveData != null) {
+            piecePositionsLiveData.removeObserver(piecePositionsLiveDataObserver);
+        }
+        piecePositionsLiveData = newData;
+        newData.observe(lifecycleOwner, piecePositionsLiveDataObserver);
     }
 
     public void setEditable(boolean newEditable) {
@@ -144,6 +143,10 @@ abstract class BaseGridView extends View {
     }
 
     public void startVictoryAnimation() {
+        if (victoryAnimator != null) {
+            LogUtil.w("BaseGridView: cannot start victory animation while animation is in progress");
+            return;
+        }
         victoryAnimator = new VictoryAnimator();
     }
 
@@ -214,22 +217,6 @@ abstract class BaseGridView extends View {
         savedState.restore(this);
     }
 
-    private void piecePositionsChanged() {
-        if (piecePositionsChangedListener != null) {
-            piecePositionsChangedListener.piecePositionsChanged(this);
-        }
-
-        Rect newGridBounds = piecePositions.getBoundingRect();
-        if (gridBounds.equals(newGridBounds)) {
-            return;
-        }
-
-        // Grid bounding box has changed!
-        this.gridBounds = newGridBounds;
-        updateCanvasBounds();
-        updateDrawDimensions();
-    }
-
     private void updateCanvasBounds() {
         Rect paddedGridBounds = new Rect(gridBounds);
         paddedGridBounds.left -= GRID_PADDING;
@@ -263,9 +250,10 @@ abstract class BaseGridView extends View {
         if (source.equals(destination)) {
             return;
         }
+        PiecePositionIndex newPiecePositions = new PiecePositionIndex(piecePositions);
         if (steps == null) {
             // Move a single piece.
-            piecePositions.moveOrSwap(firstPieceIndex, destination);
+            newPiecePositions.moveOrSwap(firstPieceIndex, destination);
         } else {
             // Move multiple pieces. Note that the set of source and destination positions may
             // partially overlap, but that's okay since we use the source piece index (not its
@@ -298,10 +286,12 @@ abstract class BaseGridView extends View {
             int[] pieceIndices = GroupFinder.getPieces(steps);
             Pos[] pieceDestinations  = GroupFinder.reconstructPositions(steps, destination);
             for (int i = 0; i < steps.length; ++i) {
-                piecePositions.moveOrSwap(pieceIndices[i], pieceDestinations[i]);
+                newPiecePositions.moveOrSwap(pieceIndices[i], pieceDestinations[i]);
             }
         }
-        piecePositionsChanged();
+        // We haven't applied any changes yet, but setting the new value in the MutableLiveData will
+        // cause the new value to be passed to piecePositionsLiveDataObserver#onChanged().
+        piecePositionsLiveData.setValue(newPiecePositions.toImmutableList());
     }
 
     private void updateDrawDimensions() {
@@ -490,14 +480,12 @@ abstract class BaseGridView extends View {
     }
 
     private static class SavedState extends BaseSavedState {
-        final List<Pos> piecePositions;
         final float zoomCx;
         final float zoomCy;
         final float zoomFactor;
 
         public SavedState(BaseGridView view, Parcelable superState) {
             super(superState);
-            piecePositions = view.piecePositions.toArrayList();
             zoomCx = view.zoomCx;
             zoomCy = view.zoomCy;
             zoomFactor = view.zoomFactor;
@@ -505,8 +493,6 @@ abstract class BaseGridView extends View {
 
         public SavedState(Parcel in) {
             super(in);
-            piecePositions = new ArrayList<>();
-            in.readList(piecePositions, null);
             zoomCx = in.readFloat();
             zoomCy = in.readFloat();
             zoomFactor = in.readFloat();
@@ -515,14 +501,12 @@ abstract class BaseGridView extends View {
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeList(piecePositions);
             out.writeFloat(zoomCx);
             out.writeFloat(zoomCy);
             out.writeFloat(zoomFactor);
         }
 
         void restore(BaseGridView view) {
-            view.setPiecePositions(piecePositions);
             view.zoomFactor = zoomFactor;
             view.zoomCx = zoomCx;
             view.zoomCy = zoomCy;

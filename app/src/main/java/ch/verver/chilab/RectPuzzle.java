@@ -33,6 +33,10 @@ abstract class RectPuzzle {
         return StateCodec.encodePositions(positions);
     }
 
+    public static boolean validate(@Nullable List<Pos> positions) {
+        return positions != null && Util.validatePositions(positions, PIECE_COUNT);
+    }
+
     @Nullable
     public static ArrayList<Pos> decode(String s) {
         ArrayList<Pos> positions;
@@ -42,7 +46,7 @@ abstract class RectPuzzle {
             LogUtil.w(e, "Failed to decode state");
             return null;
         }
-        if (!Util.validatePositions(positions, PIECE_COUNT)) {
+        if (!validate(positions)) {
             return null;
         }
         return positions;

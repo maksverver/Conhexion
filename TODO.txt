@@ -13,11 +13,10 @@
   - Maybe: rename to avoid spoilers? (But include a link / give some credits!)
 
 Cleanup:
-  - Maybe: refactor AppState into a proper ViewModel with LiveData?
-    https://developer.android.com/topic/libraries/architecture/viewmodel
-    The GridViews could then manipulate the LiveData, and MainActivity
-    could subscribe to state changes via the LiveModel, which seems cleaner.
   - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?
+  - Maybe: figure out how to obtain AndroidViewModel in fragments, instead of creating a static singleton in the App class.
+  - Maybe: use SavedStateHandle to persist AppState instead of SharedPreferences?
+    (Would require making ImmutableList and Pos Serializable/Parcelable?)
 
 Stretch goals:
   - Undo function

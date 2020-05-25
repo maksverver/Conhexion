@@ -2,6 +2,8 @@ package ch.verver.chilab;
 
 import android.app.Application;
 
+import androidx.lifecycle.ViewModelProvider;
+
 public class App extends Application {
     private static AppState appState;
 
@@ -16,9 +18,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        appState = new AppState();
-        appState.restoreFromSharedPreferences(this);
-        appState.fillInMissingFields();
+        appState = new ViewModelProvider.AndroidViewModelFactory(this).create(AppState.class);
 
         LogUtil.i("Application created");
     }
