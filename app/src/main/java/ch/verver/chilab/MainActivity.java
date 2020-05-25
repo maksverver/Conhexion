@@ -2,6 +2,7 @@ package ch.verver.chilab;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -9,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,10 +21,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AppState appState;
 
     private MutableLiveData<FragmentId> activeFragmentIdLiveData;
+    private MutableLiveData<ImmutableList<Pos>> rectPuzzlePiecePositionsLiveData;
+    private MutableLiveData<ImmutableList<Pos>> hexPuzzlePiecePositionsLiveData;
 
     private FragmentId currentFragmentId = FragmentId.NONE;
-    private @Nullable Solution.Progress rectPuzzleProgress;
-    private @Nullable Solution.Progress hexPuzzleProgress;
+    private @Nullable Solution.Progress rectPuzzleProgress = null;
+    private @Nullable Solution.Progress hexPuzzleProgress = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,14 +55,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 onActiveFragmentIdChanged(fragmentId);
             }
         });
-        appState.getRectPuzzlePiecePositions().observe(this, new Observer<ImmutableList<Pos>>() {
+        rectPuzzlePiecePositionsLiveData = appState.getRectPuzzlePiecePositions();
+        rectPuzzlePiecePositionsLiveData.observe(this, new Observer<ImmutableList<Pos>>() {
             @Override
             public void onChanged(ImmutableList<Pos> rectPuzzlePiecePositions) {
                 onRectPiecePositionsChanged(rectPuzzlePiecePositions);
 
             }
         });
-        appState.getHexPuzzlePiecePositions().observe(this, new Observer<ImmutableList<Pos>>() {
+        hexPuzzlePiecePositionsLiveData = appState.getHexPuzzlePiecePositions();
+        hexPuzzlePiecePositionsLiveData.observe(this, new Observer<ImmutableList<Pos>>() {
             @Override
             public void onChanged(ImmutableList<Pos> hexPuzzlePiecePositions) {
                 onHexPiecePositionsChanged(hexPuzzlePiecePositions);
@@ -89,24 +95,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE);
                 return true;
 
+            case R.id.reset_puzzle_pieces:
+                promptResetPiecePositions();
+
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void promptResetPiecePositions() {
+        if (currentFragmentId != FragmentId.RECT_PUZZLE && currentFragmentId != FragmentId.HEX_PUZZLE) {
+            LogUtil.w("Cannot reset puzzle pieces while active fragment is %s\n", currentFragmentId);
+            return;
+        }
+        AlertDialog.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == DialogInterface.BUTTON_POSITIVE) {
+                    switch (currentFragmentId) {
+                        case RECT_PUZZLE:
+                            rectPuzzlePiecePositionsLiveData.setValue(
+                                    ImmutableList.copyOf(RectPuzzle.getRandomPiecePositions()));
+                            break;
+                        case HEX_PUZZLE:
+                            hexPuzzlePiecePositionsLiveData.setValue(
+                                    ImmutableList.copyOf(HexPuzzle.getRandomPiecePositions()));
+                            break;
+                    }
+                }
+            }
+        };
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.reset_pieces_dialog_title)
+                .setMessage(R.string.reset_pieces_dialog_message)
+                .setNegativeButton(R.string.reset_pieces_dialog_cancel_button, onClickListener)
+                .setPositiveButton(R.string.reset_pieces_dialog_reset_button, onClickListener)
+                .setCancelable(true)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .create()
+                .show();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.play_hex_puzzle:
+            case R.id.replay_hex_puzzle:
                 activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE);
                 return;
             case R.id.replay_rect_puzzle:
-                // TODO: should ask to reset pieces
                 activeFragmentIdLiveData.setValue(FragmentId.RECT_PUZZLE);
-                return;
-            case R.id.replay_hex_puzzle:
-                // TODO: should ask to reset pieces
-                activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE);
                 return;
         }
         LogUtil.w("Unknown view clicked: %s", v);
@@ -134,6 +172,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         transaction.replace(R.id.fragment_container, newFragment, newFragmentId.name());
         transaction.commit();
         currentFragmentId = newFragmentId;
+
+        if ((newFragmentId == FragmentId.RECT_PUZZLE && rectPuzzleProgress != null && rectPuzzleProgress.isSolved()) ||
+            (newFragmentId == FragmentId.HEX_PUZZLE && hexPuzzleProgress != null && hexPuzzleProgress.isSolved())) {
+            promptResetPiecePositions();
+        }
     }
 
     private void onRectPiecePositionsChanged(ImmutableList<Pos> piecePositions) {

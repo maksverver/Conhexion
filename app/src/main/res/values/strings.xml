@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">China Labyrinth</string>
-    <string name="switch_to_hex_puzzle">Switch to hexagonal</string>
-    <string name="switch_to_rect_puzzle">Switch to rectangular</string>
+    <string name="switch_to_hex_puzzle">Switch to puzzle</string>
+    <string name="switch_to_rect_puzzle">Switch to tutorial</string>
+    <string name="reset_puzzle_pieces">Reset puzzle pieces</string>
+    <string name="reset_pieces_dialog_title">Reset puzzle piece positions?</string>
+    <string name="reset_pieces_dialog_message">You will lose your progress!</string>
+    <string name="reset_pieces_dialog_reset_button">Reset</string>
+    <string name="reset_pieces_dialog_cancel_button">Cancel</string>
 </resources>
