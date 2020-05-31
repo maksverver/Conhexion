@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * instantiated with a {@link GridDrawer} that is used to draw the grid and its pieces, and to
  * map from pixel coordinates to grid coordinates and back.
  */
-abstract class BaseGridView extends View {
+abstract class BaseGridView<D extends Direction> extends View {
     private static final int GRID_PADDING = 1;
 
     private static final float MIN_ZOOM_FACTOR = 1.0f;
@@ -43,7 +43,7 @@ abstract class BaseGridView extends View {
     private static final float LONG_PRESS_MAX_MOVEMENT = 0.35f;
 
     private final Handler handler = new Handler();
-    private final GridDrawer gridDrawer;
+    private final GridDrawer<D> gridDrawer;
     private final ScaleGestureDetector scaleGestureDetector;
 
     private MutableLiveData<ImmutableList<Pos>> piecePositionsLiveData = null;
@@ -69,7 +69,7 @@ abstract class BaseGridView extends View {
     private final ReadonlyPiecePositionIndex readonlyPiecePositions = piecePositions.readonlyWrapper();
 
     // List of overlap errors. Recalculated whenever piece positions OR dragged pieces change.
-    private ImmutableList<Pair<Pos, Direction>> overlapErrors = ImmutableList.empty();
+    private ImmutableList<Pair<Pos, D>> overlapErrors = ImmutableList.empty();
 
     // Current bounding box of piece positions. Updated whenever piece positions change.
     private Rect gridBounds = piecePositions.getBoundingRect();
@@ -92,7 +92,7 @@ abstract class BaseGridView extends View {
     private float zoomFactor = MIN_ZOOM_FACTOR;
 
     // Current drag state. null when nothing is being dragged.
-    private @Nullable DragState dragState = null;
+    private @Nullable DragState<D> dragState = null;
 
     // Determines whether the view allows panning, zooming, and moving pieces.
     private boolean editable = true;
@@ -100,28 +100,28 @@ abstract class BaseGridView extends View {
     // When non-null, a victory animation is in progress. See startVictoryAnimation()
     private @Nullable VictoryAnimator victoryAnimator = null;
 
-    public BaseGridView(Context context, GridDrawer gridDrawer) {
+    public BaseGridView(Context context, GridDrawer<D> gridDrawer) {
         super(context);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
         init();
     }
 
-    public BaseGridView(Context context, GridDrawer gridDrawer, @Nullable AttributeSet attrs) {
+    public BaseGridView(Context context, GridDrawer<D> gridDrawer, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
         init();
     }
 
-    public BaseGridView(Context context, GridDrawer gridDrawer, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public BaseGridView(Context context, GridDrawer<D> gridDrawer, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
         init();
     }
 
-    public BaseGridView(Context context, GridDrawer gridDrawer, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public BaseGridView(Context context, GridDrawer<D> gridDrawer, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         this.gridDrawer = gridDrawer;
         this.scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureListener());
@@ -234,13 +234,13 @@ abstract class BaseGridView extends View {
                         gridDrawer.getErrorDirections(), piecePositions, draggedPieces));
     }
 
-    private static ArrayList<Pair<Pos, Direction>> calculateOverlapErrors(
-            Direction[] errorDirections, PiecePositionIndex piecePositions, long draggedPieces) {
-        ArrayList<Pair<Pos, Direction>> overlapErrors = new ArrayList<>();
+    private static <D extends Direction> ArrayList<Pair<Pos, D>> calculateOverlapErrors(
+            ImmutableList<D> errorDirections, PiecePositionIndex piecePositions, long draggedPieces) {
+        ArrayList<Pair<Pos, D>> overlapErrors = new ArrayList<>();
         for (int i = 0, n = piecePositions.size(); i < n; ++i) {
             if (!Util.isDragged(draggedPieces, i)) {
                 Pos pos = piecePositions.get(i);
-                for (Direction direction : errorDirections) {
+                for (D direction : errorDirections) {
                     int j = piecePositions.indexOf(direction.step(pos));
                     if (j != -1 && !Util.isDragged(draggedPieces, j) &&
                             (!direction.hasPath(i) || !direction.opposite().hasPath(j))) {
@@ -270,7 +270,7 @@ abstract class BaseGridView extends View {
         return piecePositions.indexOf(gridDrawer.calculateGridPos(drawDimensions, pixelX, pixelY));
     }
 
-    private void movePiecesBy(long pieces, @Nullable GroupFinder.Step[] steps, float deltaX, float deltaY) {
+    private void movePiecesBy(long pieces, @Nullable ImmutableList<GroupFinder.Step<D>> steps, float deltaX, float deltaY) {
         if (pieces == 0) {
             return;
         }
@@ -278,7 +278,7 @@ abstract class BaseGridView extends View {
         if (Util.isMultiDrag(pieces) != (steps != null)) {
             throw new AssertionError();
         }
-        int firstPieceIndex = steps == null ? Util.getDraggedIndex(pieces) : steps[0].pieceIndex;
+        int firstPieceIndex = steps == null ? Util.getDraggedIndex(pieces) : steps.get(0).pieceIndex;
         Pos source = piecePositions.get(firstPieceIndex);
         PointF origin = gridDrawer.calculateFieldCenter(drawDimensions, source.x, source.y);
         Pos destination = gridDrawer.calculateGridPos(drawDimensions, origin.x + deltaX, origin.y + deltaY);
@@ -320,7 +320,7 @@ abstract class BaseGridView extends View {
             // users expect would expect anything better to happen in this case.
             int[] pieceIndices = GroupFinder.getPieces(steps);
             Pos[] pieceDestinations  = GroupFinder.reconstructPositions(steps, destination);
-            for (int i = 0; i < steps.length; ++i) {
+            for (int i = 0; i < steps.size(); ++i) {
                 newPiecePositions.moveOrSwap(pieceIndices[i], pieceDestinations[i]);
             }
         }
@@ -385,7 +385,7 @@ abstract class BaseGridView extends View {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 LogUtil.v("Drag started");
-                dragState = new DragState(event, findPieceIndex(event.getX(), event.getY()));
+                dragState = new DragState<>(event, findPieceIndex(event.getX(), event.getY()));
                 if (dragState.pieces != 0) {
                     draggedPiecesChanged(dragState.pieces);
                 }
@@ -408,7 +408,7 @@ abstract class BaseGridView extends View {
                     return false;
                 }
                 LogUtil.v("Drag finished");
-                DragState oldDragState = endDrag();
+                DragState<D> oldDragState = endDrag();
                 movePiecesBy(oldDragState.pieces, oldDragState.pieceSteps, oldDragState.deltaX, oldDragState.deltaY);
                 invalidate();
                 return true;
@@ -430,8 +430,8 @@ abstract class BaseGridView extends View {
     }
 
     // Assumes dragState != null. Don't call this method directly! Use cancelDrag() instead.
-    private DragState endDrag() {
-        DragState oldDragState = dragState;
+    private DragState<D> endDrag() {
+        DragState<D> oldDragState = dragState;
         dragState = null;
         if (oldDragState.pieces != 0) {
             draggedPiecesChanged(0);
@@ -439,7 +439,7 @@ abstract class BaseGridView extends View {
         return oldDragState;
     }
 
-    private void startLongPressDetection(final DragState originalDragState) {
+    private void startLongPressDetection(final DragState<D> originalDragState) {
         if (originalDragState.pieces != 0) {
             handler.postDelayed(new Runnable() {
                 @Override
@@ -447,11 +447,11 @@ abstract class BaseGridView extends View {
                     if (dragState == originalDragState && dragState.pieces != 0 &&
                             sqr(dragState.deltaX) + sqr(dragState.deltaY) <
                                 sqr(LONG_PRESS_MAX_MOVEMENT * drawDimensions.scale)) {
-                        GroupFinder.Step[] pieceSteps = GroupFinder.calculateSteps(
+                        ImmutableList<GroupFinder.Step<D>> pieceSteps = GroupFinder.calculateSteps(
                                 gridDrawer.getConnectionDirections(),
                                 readonlyPiecePositions,
                                 Util.getDraggedIndex(dragState.pieces));
-                        if (pieceSteps.length > 1) {
+                        if (pieceSteps.size() > 1) {
                             dragState.pieces = GroupFinder.getPieceMask(pieceSteps);
                             dragState.pieceSteps = pieceSteps;
                             draggedPiecesChanged(dragState.pieces);
@@ -494,7 +494,7 @@ abstract class BaseGridView extends View {
         return x * x;
     }
 
-    private static class DragState {
+    private static class DragState<D extends Direction> {
         final int pointerId;
         final float startX, startY;
         float lastX, lastY;
@@ -503,7 +503,7 @@ abstract class BaseGridView extends View {
         // Bitmask of pieces being dragged. pieceSteps != null iff. more than 1 bit is set in pieces.
         long pieces;
         // Steps used to select multiple pieces. Used to reconstruct their positions when dropped.
-        @Nullable GroupFinder.Step[] pieceSteps;
+        @Nullable ImmutableList<GroupFinder.Step<D>> pieceSteps;
 
         private DragState(MotionEvent e, int firstPieceIndex) {
             this.startX = this.lastX = e.getX();
@@ -534,7 +534,7 @@ abstract class BaseGridView extends View {
         final float zoomCy;
         final float zoomFactor;
 
-        public SavedState(BaseGridView view, Parcelable superState) {
+        public SavedState(BaseGridView<?> view, Parcelable superState) {
             super(superState);
             zoomCx = view.zoomCx;
             zoomCy = view.zoomCy;
@@ -556,7 +556,7 @@ abstract class BaseGridView extends View {
             out.writeFloat(zoomFactor);
         }
 
-        void restore(BaseGridView view) {
+        void restore(BaseGridView<?> view) {
             view.zoomFactor = zoomFactor;
             view.zoomCx = zoomCx;
             view.zoomCy = zoomCy;

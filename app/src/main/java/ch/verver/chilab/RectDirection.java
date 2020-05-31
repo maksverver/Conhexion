@@ -47,6 +47,8 @@ enum RectDirection implements Direction {
         }
     };
 
+    public static final ImmutableList<RectDirection> VALUES = ImmutableList.copyOf(values());
+
     RectDirection(int dx, int dy) {
         this.dx = dx;
         this.dy = dy;

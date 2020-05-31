@@ -13,7 +13,10 @@ import android.util.Pair;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 
-class RectGridDrawer implements GridDrawer {
+class RectGridDrawer implements GridDrawer<RectDirection> {
+
+    private static final ImmutableList<RectDirection> ERROR_DIRECTIONS =
+            ImmutableList.of(RectDirection.UP, RectDirection.LEFT);
 
     private final Drawable[] pieceBackDrawables;
     private final Drawable[] pieceFrontDrawables;
@@ -77,13 +80,13 @@ class RectGridDrawer implements GridDrawer {
     }
 
     @Override
-    public Direction[] getConnectionDirections() {
-        return RectDirection.values();
+    public ImmutableList<RectDirection> getConnectionDirections() {
+        return RectDirection.VALUES;
     }
 
     @Override
-    public Direction[] getErrorDirections() {
-        return new Direction[] { RectDirection.UP, RectDirection.LEFT };
+    public ImmutableList<RectDirection> getErrorDirections() {
+        return ERROR_DIRECTIONS;
     }
 
     @Override
@@ -108,7 +111,7 @@ class RectGridDrawer implements GridDrawer {
     @Override
     public void draw(
             Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
-            ImmutableList<Pair<Pos, Direction>> overlapErrors,
+            ImmutableList<Pair<Pos, RectDirection>> overlapErrors,
             long draggedPieces, float dragDeltaX, float dragDeltaY) {
         drawGridLines(canvas, drawDimensions);
 
@@ -123,9 +126,9 @@ class RectGridDrawer implements GridDrawer {
         }
 
         // Draw overlap errors
-        for (Pair<Pos, Direction> error : overlapErrors) {
+        for (Pair<Pos, RectDirection> error : overlapErrors) {
             Pos pos = error.first;
-            switch ((RectDirection) error.second) {
+            switch (error.second) {
                 case LEFT:
                     drawDrawable(canvas, drawDimensions, overlapVertiDrawable,
                             pos.x - 0.25f, (float) pos.y, pos.x + 0.25f, pos.y + 1.0f,

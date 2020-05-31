@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
-public class RectGridView extends BaseGridView {
+public class RectGridView extends BaseGridView<RectDirection> {
     public RectGridView(Context context) {
         super(context, new RectGridDrawer(context.getResources(), context.getTheme()));
     }

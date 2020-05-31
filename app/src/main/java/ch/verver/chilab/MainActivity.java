@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onRectPiecePositionsChanged(ImmutableList<Pos> piecePositions) {
         Solution.Progress oldProgress = rectPuzzleProgress;
-        rectPuzzleProgress = Solution.calculateProgress(piecePositions, RectDirection.values());
+        rectPuzzleProgress = Solution.calculateProgress(piecePositions, RectDirection.VALUES);
         if (rectPuzzleProgress.isSolved() && oldProgress != null && !oldProgress.isSolved()) {
             LogUtil.i("Rect puzzle is solved!");
             RectPuzzleFragment rectPuzzleFragment =
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onHexPiecePositionsChanged(ImmutableList<Pos> piecePositions) {
         Solution.Progress oldProgress = hexPuzzleProgress;
-        hexPuzzleProgress = Solution.calculateProgress(piecePositions, HexDirection.values());
+        hexPuzzleProgress = Solution.calculateProgress(piecePositions, HexDirection.VALUES);
         if (hexPuzzleProgress.isSolved() && oldProgress != null && !oldProgress.isSolved()) {
             LogUtil.i("Hex puzzle is solved!");
             HexPuzzleFragment hexPuzzleFragment =

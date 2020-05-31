@@ -1,6 +1,7 @@
 package ch.verver.chilab;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.RandomAccess;
@@ -34,6 +35,15 @@ public final class ImmutableList<T> extends AbstractList<T> implements List<T>, 
             return (ImmutableList<T>) collection;
         }
         return new ImmutableList<>(collection.toArray());
+    }
+
+    // Provided for consistency, though ImmutableList.of(elements) would also work.
+    public static <T> ImmutableList<T> copyOf(T[] elements) {
+        return new ImmutableList<>(elements.clone());
+    }
+
+    public static <T> ImmutableList<T> copyOf(T[] elements, int newLength) {
+        return new ImmutableList<>(Arrays.copyOf(elements, newLength));
     }
 
     private ImmutableList(Object[] values) {

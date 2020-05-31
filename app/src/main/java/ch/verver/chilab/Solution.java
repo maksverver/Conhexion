@@ -48,18 +48,18 @@ class Solution {
         }
     }
 
-    static Progress calculateProgress(List<Pos> piecePositions, Direction[] directions) {
+    static Progress calculateProgress(List<Pos> piecePositions, ImmutableList<? extends Direction> directions) {
         return calculateProgress(new PiecePositionIndex(piecePositions), directions);
     }
 
-    static Progress calculateProgress(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {
+    static Progress calculateProgress(ReadonlyPiecePositionIndex piecePositionIndex, ImmutableList<? extends Direction> directions) {
         return new Solution.Progress(
                 GroupFinder.countGroups(directions, piecePositionIndex),
                 countDisconnections(piecePositionIndex, directions),
                 countOverlaps(piecePositionIndex, directions));
     }
 
-    private static int countDisconnections(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {
+    private static int countDisconnections(ReadonlyPiecePositionIndex piecePositionIndex, ImmutableList<? extends Direction> directions) {
         int result = 0;
         for (int i = 0; i < piecePositionIndex.size(); ++i) {
             Pos pos = piecePositionIndex.get(i);
@@ -75,7 +75,7 @@ class Solution {
         return result;
     }
 
-    private static int countOverlaps(ReadonlyPiecePositionIndex piecePositionIndex, Direction[] directions) {
+    private static int countOverlaps(ReadonlyPiecePositionIndex piecePositionIndex, ImmutableList<? extends Direction> directions) {
         int result = 0;
         for (int i = 0; i < piecePositionIndex.size(); ++i) {
             Pos pos = piecePositionIndex.get(i);

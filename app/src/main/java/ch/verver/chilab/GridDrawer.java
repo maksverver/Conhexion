@@ -16,19 +16,16 @@ import android.util.Pair;
  * @see BaseGridView
  * @see DrawDimensions
  */
-interface GridDrawer {
+interface GridDrawer<D extends Direction> {
 
     /**
      * Returns an array of grid directions along which pieces may be connected.
      * Used to detect connected components when selecting multiple pieces by long-pressing.
      */
-    Direction[] getConnectionDirections();
+    ImmutableList<D> getConnectionDirections();
 
-    /**
-     * Returns an array of directions in which to check for overlap errors.
-     * @return
-     */
-    Direction[] getErrorDirections();
+    /** Returns an array of directions in which to check for overlap errors. */
+    ImmutableList<D> getErrorDirections();
 
     /** Returns the grid position corresponding with the given pixel coordinates. */
     Pos calculateGridPos(DrawDimensions drawDimensions, float pixelX, float pixelY);
@@ -52,7 +49,7 @@ interface GridDrawer {
      */
     void draw(Canvas canvas, DrawDimensions drawDimensions,
               ReadonlyPiecePositionIndex piecePositions,
-              ImmutableList<Pair<Pos, Direction>> overlapErrors,
+              ImmutableList<Pair<Pos, D>> overlapErrors,
               long draggedPieces, float dragDeltaX, float dragDeltaY);
 
     /**

@@ -16,7 +16,7 @@ import androidx.core.content.res.ResourcesCompat;
 import java.util.EnumMap;
 
 // See HexDirection.java for a summary of the coordinate system used for the hex grid.
-class HexGridDrawer implements GridDrawer {
+class HexGridDrawer implements GridDrawer<HexDirection> {
 
     private static final float SQRT3F = (float) Math.sqrt(3);
 
@@ -24,8 +24,8 @@ class HexGridDrawer implements GridDrawer {
             HexDirection.SOUTH, HexDirection.NORTH_EAST, HexDirection.NORTH_WEST,
             HexDirection.SOUTH_EAST, HexDirection.SOUTH_WEST, HexDirection.NORTH};
 
-    private static final HexDirection OVERLAP_ERROR_DIRECTIONS[] = {
-            HexDirection.NORTH_EAST, HexDirection.SOUTH_EAST, HexDirection.SOUTH};
+    private static final ImmutableList<HexDirection> OVERLAP_ERROR_DIRECTIONS = ImmutableList.of(
+            HexDirection.NORTH_EAST, HexDirection.SOUTH_EAST, HexDirection.SOUTH);
 
     private final Paint hexGridLinesPaint;
     private final Drawable tileBackground;
@@ -66,13 +66,13 @@ class HexGridDrawer implements GridDrawer {
     }
 
     @Override
-    public Direction[] getConnectionDirections() {
-        return HexDirection.values();
+    public ImmutableList<HexDirection> getConnectionDirections() {
+        return HexDirection.VALUES;
     }
 
     @Override
-    public Direction[] getErrorDirections() {
-        return OVERLAP_ERROR_DIRECTIONS.clone();
+    public ImmutableList<HexDirection> getErrorDirections() {
+        return OVERLAP_ERROR_DIRECTIONS;
     }
 
     @Override
@@ -147,7 +147,7 @@ class HexGridDrawer implements GridDrawer {
     @Override
     public void draw(
             Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
-            ImmutableList<Pair<Pos, Direction>> overlapErrors,
+            ImmutableList<Pair<Pos, HexDirection>> overlapErrors,
             long draggedPieces, float dragDeltaX, float dragDeltaY) {
         final int n = piecePositions.size();
 
@@ -271,10 +271,10 @@ class HexGridDrawer implements GridDrawer {
     }
 
     private void drawOverlapErrors(Canvas canvas, DrawDimensions drawDimensions,
-                                   ImmutableList<Pair<Pos, Direction>> overlapErrors) {
-        for (Pair<Pos, Direction> error : overlapErrors) {
+                                   ImmutableList<Pair<Pos, HexDirection>> overlapErrors) {
+        for (Pair<Pos, HexDirection> error : overlapErrors) {
             Rect errorBounds = getTileBounds(drawDimensions, error.first);
-            Drawable errorDrawable = tileOverlapErrors.get((HexDirection) error.second);
+            Drawable errorDrawable = tileOverlapErrors.get(error.second);
             draw(canvas, errorBounds, errorDrawable, null);
         }
     }

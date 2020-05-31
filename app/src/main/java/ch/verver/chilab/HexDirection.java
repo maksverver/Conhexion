@@ -105,6 +105,8 @@ enum HexDirection implements Direction {
         }
     };
 
+    public static final ImmutableList<HexDirection> VALUES = ImmutableList.copyOf(values());
+
     @Override
     public boolean hasPath(int pieceIndex) {
         int type = pieceIndex + 1;

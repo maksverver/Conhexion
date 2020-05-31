@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
-public class HexGridView extends BaseGridView {
+public class HexGridView extends BaseGridView<HexDirection> {
     public HexGridView(Context context) {
         super(context, new HexGridDrawer(context.getResources(), context.getTheme()));
     }
