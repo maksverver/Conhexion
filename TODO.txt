@@ -1,16 +1,13 @@
-  - App menu:
-      - option to show tutorial
-      - option to reset current puzzle (confirm!)
-      - option to switch between rect/hex game
-  - "Replay tutorial" and "Replay puzzle" buttons should ask to reset pieces
   - Tutorial page(s) that you can swipe through.
   - Allow BaseGridView to take up more space (especially useful in horizontal mode):
         - Hide app bar / replace with a floating button?
         - Fullscreen mode? (Always on, or optional?)
           https://developer.android.com/training/system-ui/immersive
   - Option to rotate hex grid by 60 degrees?
-  - Better launcher icon
+  - Update launcher icon
   - Maybe: rename to avoid spoilers? (But include a link / give some credits!)
+  - Change "reset pieces?" dialog to a floating button that pops up whenever the grid is solved?
+    (Should still require confirmation!)
 
 Cleanup:
   - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?

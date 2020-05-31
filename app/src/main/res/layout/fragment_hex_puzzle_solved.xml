@@ -21,8 +21,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="You solved the puzzle!"
-        android:textSize="16pt" />
+        android:text="You solved the puzzle!\n\nThis is the end of the game, but you can replay the tutorial or the puzzle if you like. Many different solutions are possible!"
+        android:textSize="14pt" />
 
     <LinearLayout
         android:layout_width="match_parent"

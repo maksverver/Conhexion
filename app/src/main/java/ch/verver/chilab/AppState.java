@@ -117,7 +117,7 @@ public class AppState extends AndroidViewModel {
         }
         if (activeFragmentId.getValue() == null) {
             LogUtil.i("AppState: initializing %s", ACTIVE_FRAGMENT_ID_KEY);
-            activeFragmentId.setValue(FragmentId.RECT_PUZZLE);
+            activeFragmentId.setValue(FragmentId.INSTRUCTIONS1);
         }
     }
 

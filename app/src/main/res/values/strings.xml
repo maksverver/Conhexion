@@ -1,10 +1,26 @@
 <resources>
     <string name="app_name">China Labyrinth</string>
-    <string name="switch_to_hex_puzzle">Switch to puzzle</string>
-    <string name="switch_to_rect_puzzle">Switch to tutorial</string>
+
+    <string name="menu_switch_to_instructions">Show instructions</string>
+    <string name="menu_switch_to_hex_puzzle">Switch to puzzle</string>
+    <string name="menu_switch_to_rect_puzzle">Switch to tutorial</string>
+
     <string name="reset_puzzle_pieces">Reset puzzle pieces</string>
     <string name="reset_pieces_dialog_title">Reset puzzle piece positions?</string>
     <string name="reset_pieces_dialog_message">You will lose your progress!</string>
     <string name="reset_pieces_dialog_reset_button">Reset</string>
     <string name="reset_pieces_dialog_cancel_button">Cancel</string>
+
+    <string name="instructions1_title">Rules</string>
+    <string name="instructions1_rule1">➊ Paths must <b>connect</b></string>
+    <string name="instructions1_rule2">➋ Backs cannot <b>overlap</b></string>
+    <string name="instructions1_rule3">➌ Connect all pieces into a <b>single group</b> to win!</string>
+    <string name="instructions1_next_button">Continue to Controls</string>
+
+    <string name="instructions2_title">Controls</string>
+    <string name="instructions2_control1">• <b>Drag</b> pieces to move them</string>
+    <string name="instructions2_control2">• <b>Long press</b> to move a group of connected pieces</string>
+    <string name="instructions2_control3">• <b>Pinch</b> to zoom in</string>
+    <string name="instructions2_previous_button">Back to Rules</string>
+    <string name="instructions2_next_button">Continue to Tutorial</string>
 </resources>

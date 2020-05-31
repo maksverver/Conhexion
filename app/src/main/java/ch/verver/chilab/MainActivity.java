@@ -87,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.switch_to_instructions:
+                activeFragmentIdLiveData.setValue(FragmentId.INSTRUCTIONS1);
+                return true;
+
             case R.id.switch_to_rect_puzzle:
                 activeFragmentIdLiveData.setValue(FragmentId.RECT_PUZZLE);
                 return true;
@@ -139,12 +143,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.instructions1_next_button:
+                activeFragmentIdLiveData.setValue(FragmentId.INSTRUCTIONS2);
+                return;
+
+            case R.id.instructions2_previous_button:
+                activeFragmentIdLiveData.setValue(FragmentId.INSTRUCTIONS1);
+                return;
+
+            case R.id.instructions2_next_button:
+            case R.id.replay_rect_puzzle:
+                activeFragmentIdLiveData.setValue(FragmentId.RECT_PUZZLE);
+                return;
+
             case R.id.play_hex_puzzle:
             case R.id.replay_hex_puzzle:
                 activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE);
-                return;
-            case R.id.replay_rect_puzzle:
-                activeFragmentIdLiveData.setValue(FragmentId.RECT_PUZZLE);
                 return;
         }
         LogUtil.w("Unknown view clicked: %s", v);
@@ -216,6 +230,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Nullable
     private Fragment createFragment(FragmentId id) {
         switch (id) {
+            case INSTRUCTIONS1:
+                return new Instructions1Fragment();
+            case INSTRUCTIONS2:
+                return new Instructions2Fragment();
             case RECT_PUZZLE:
                 return new RectPuzzleFragment();
             case RECT_PUZZLE_SOLVED:
