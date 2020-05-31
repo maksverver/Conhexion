@@ -8,6 +8,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
@@ -67,6 +68,11 @@ class HexGridDrawer implements GridDrawer {
     @Override
     public Direction[] getConnectionDirections() {
         return HexDirection.values();
+    }
+
+    @Override
+    public Direction[] getErrorDirections() {
+        return OVERLAP_ERROR_DIRECTIONS.clone();
     }
 
     @Override
@@ -139,7 +145,10 @@ class HexGridDrawer implements GridDrawer {
     }
 
     @Override
-    public void draw(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions, long draggedPieces, float dragDeltaX, float dragDeltaY) {
+    public void draw(
+            Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
+            ImmutableList<Pair<Pos, Direction>> overlapErrors,
+            long draggedPieces, float dragDeltaX, float dragDeltaY) {
         final int n = piecePositions.size();
 
         // Draw grid in the background
@@ -153,7 +162,7 @@ class HexGridDrawer implements GridDrawer {
         }
 
         // Draw overlap errors.
-        drawOverlapErrors(canvas, drawDimensions, piecePositions, draggedPieces);
+        drawOverlapErrors(canvas, drawDimensions, overlapErrors);
 
         // Draw dragged pieces last, so they're on top of everything else.
         if (draggedPieces != 0) {
@@ -262,18 +271,11 @@ class HexGridDrawer implements GridDrawer {
     }
 
     private void drawOverlapErrors(Canvas canvas, DrawDimensions drawDimensions,
-                                   ReadonlyPiecePositionIndex piecePositions, long draggedPieces) {
-        for (int i = 0, n = piecePositions.size(); i < n; ++i) {
-            if (!Util.isDragged(draggedPieces, i))  {
-                Pos pos = piecePositions.get(i);
-                for (HexDirection direction : OVERLAP_ERROR_DIRECTIONS) {
-                    int j = piecePositions.indexOf(direction.step(pos));
-                    if (j != -1 && !Util.isDragged(draggedPieces, j) &&
-                            (!direction.hasPath(i) || !direction.opposite().hasPath(j))) {
-                        draw(canvas, getTileBounds(drawDimensions, pos), tileOverlapErrors.get(direction), null);
-                    }
-                }
-            }
+                                   ImmutableList<Pair<Pos, Direction>> overlapErrors) {
+        for (Pair<Pos, Direction> error : overlapErrors) {
+            Rect errorBounds = getTileBounds(drawDimensions, error.first);
+            Drawable errorDrawable = tileOverlapErrors.get((HexDirection) error.second);
+            draw(canvas, errorBounds, errorDrawable, null);
         }
     }
 }

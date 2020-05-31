@@ -8,7 +8,6 @@
     (Should still require confirmation!)
 
 Cleanup:
-  - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?
   - Maybe: use SavedStateHandle to persist AppState instead of SharedPreferences?
     (Would require making ImmutableList and Pos Serializable/Parcelable?)
 

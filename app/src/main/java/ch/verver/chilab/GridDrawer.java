@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Pair;
 
 /**
  * Interface of classes that know how to draw a grid with puzzle pieces, and can translate
@@ -22,6 +23,12 @@ interface GridDrawer {
      * Used to detect connected components when selecting multiple pieces by long-pressing.
      */
     Direction[] getConnectionDirections();
+
+    /**
+     * Returns an array of directions in which to check for overlap errors.
+     * @return
+     */
+    Direction[] getErrorDirections();
 
     /** Returns the grid position corresponding with the given pixel coordinates. */
     Pos calculateGridPos(DrawDimensions drawDimensions, float pixelX, float pixelY);
@@ -45,6 +52,7 @@ interface GridDrawer {
      */
     void draw(Canvas canvas, DrawDimensions drawDimensions,
               ReadonlyPiecePositionIndex piecePositions,
+              ImmutableList<Pair<Pos, Direction>> overlapErrors,
               long draggedPieces, float dragDeltaX, float dragDeltaY);
 
     /**

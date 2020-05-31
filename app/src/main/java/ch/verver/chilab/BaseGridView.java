@@ -10,6 +10,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -19,6 +20,8 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+
+import java.util.ArrayList;
 
 /**
  * Base class for grid-based puzzle views.
@@ -49,6 +52,7 @@ abstract class BaseGridView extends View {
         public void onChanged(ImmutableList<Pos> positions) {
             cancelDrag();
             piecePositions.assign(positions);
+            updateOverlapErrors(0);
             Rect newGridBounds = piecePositions.getBoundingRect();
             if (!gridBounds.equals(newGridBounds)) {
                 // Grid bounding box has changed!
@@ -63,6 +67,9 @@ abstract class BaseGridView extends View {
     // Current piece positions
     private final PiecePositionIndex piecePositions = new PiecePositionIndex();
     private final ReadonlyPiecePositionIndex readonlyPiecePositions = piecePositions.readonlyWrapper();
+
+    // List of overlap errors. Recalculated whenever piece positions OR dragged pieces change.
+    private ImmutableList<Pair<Pos, Direction>> overlapErrors = ImmutableList.empty();
 
     // Current bounding box of piece positions. Updated whenever piece positions change.
     private Rect gridBounds = piecePositions.getBoundingRect();
@@ -190,7 +197,7 @@ abstract class BaseGridView extends View {
             dragDeltaY = dragState.deltaY;
         }
         if (victoryAnimator == null) {
-            gridDrawer.draw(canvas, drawDimensions, readonlyPiecePositions,
+            gridDrawer.draw(canvas, drawDimensions, readonlyPiecePositions, overlapErrors,
                     draggedPieces, dragDeltaX, dragDeltaY);
         } else {
             // Zoom out during victory animation.
@@ -215,6 +222,34 @@ abstract class BaseGridView extends View {
         SavedState savedState = (SavedState) parcelable;
         super.onRestoreInstanceState(savedState.getSuperState());
         savedState.restore(this);
+    }
+
+    private void draggedPiecesChanged(long draggedPieces) {
+        updateOverlapErrors(draggedPieces);
+    }
+
+    private void updateOverlapErrors(long draggedPieces) {
+        overlapErrors = ImmutableList.copyOf(
+                calculateOverlapErrors(
+                        gridDrawer.getErrorDirections(), piecePositions, draggedPieces));
+    }
+
+    private static ArrayList<Pair<Pos, Direction>> calculateOverlapErrors(
+            Direction[] errorDirections, PiecePositionIndex piecePositions, long draggedPieces) {
+        ArrayList<Pair<Pos, Direction>> overlapErrors = new ArrayList<>();
+        for (int i = 0, n = piecePositions.size(); i < n; ++i) {
+            if (!Util.isDragged(draggedPieces, i)) {
+                Pos pos = piecePositions.get(i);
+                for (Direction direction : errorDirections) {
+                    int j = piecePositions.indexOf(direction.step(pos));
+                    if (j != -1 && !Util.isDragged(draggedPieces, j) &&
+                            (!direction.hasPath(i) || !direction.opposite().hasPath(j))) {
+                        overlapErrors.add(Pair.create(pos, direction));
+                    }
+                }
+            }
+        }
+        return overlapErrors;
     }
 
     private void updateCanvasBounds() {
@@ -349,9 +384,12 @@ abstract class BaseGridView extends View {
     private boolean detectDrag(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                dragState = new DragState(event, findPieceIndex(event.getX(), event.getY()));
-                startLongPressDetection(dragState);
                 LogUtil.v("Drag started");
+                dragState = new DragState(event, findPieceIndex(event.getX(), event.getY()));
+                if (dragState.pieces != 0) {
+                    draggedPiecesChanged(dragState.pieces);
+                }
+                startLongPressDetection(dragState);
                 invalidate();
                 return true;
 
@@ -370,8 +408,8 @@ abstract class BaseGridView extends View {
                     return false;
                 }
                 LogUtil.v("Drag finished");
-                movePiecesBy(dragState.pieces, dragState.pieceSteps, dragState.deltaX, dragState.deltaY);
-                dragState = null;
+                DragState oldDragState = endDrag();
+                movePiecesBy(oldDragState.pieces, oldDragState.pieceSteps, oldDragState.deltaX, oldDragState.deltaY);
                 invalidate();
                 return true;
 
@@ -383,11 +421,22 @@ abstract class BaseGridView extends View {
 
     private boolean cancelDrag() {
         if (dragState != null) {
-            dragState = null;
             LogUtil.v("Drag cancelled");
+            endDrag();
             invalidate();
+            return true;
         }
         return false;
+    }
+
+    // Assumes dragState != null. Don't call this method directly! Use cancelDrag() instead.
+    private DragState endDrag() {
+        DragState oldDragState = dragState;
+        dragState = null;
+        if (oldDragState.pieces != 0) {
+            draggedPiecesChanged(0);
+        }
+        return oldDragState;
     }
 
     private void startLongPressDetection(final DragState originalDragState) {
@@ -405,6 +454,7 @@ abstract class BaseGridView extends View {
                         if (pieceSteps.length > 1) {
                             dragState.pieces = GroupFinder.getPieceMask(pieceSteps);
                             dragState.pieceSteps = pieceSteps;
+                            draggedPiecesChanged(dragState.pieces);
                             invalidate();
                         }
                     }

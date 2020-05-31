@@ -8,6 +8,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
@@ -81,6 +82,11 @@ class RectGridDrawer implements GridDrawer {
     }
 
     @Override
+    public Direction[] getErrorDirections() {
+        return new Direction[] { RectDirection.UP, RectDirection.LEFT };
+    }
+
+    @Override
     public Pos calculateGridPos(DrawDimensions drawDimensions, float pixelX, float pixelY) {
         return new Pos(
                 (int) Math.floor(pixelToGridX(drawDimensions, pixelX)),
@@ -100,8 +106,10 @@ class RectGridDrawer implements GridDrawer {
     }
 
     @Override
-    public void draw(Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
-                     long draggedPieces, float dragDeltaX, float dragDeltaY) {
+    public void draw(
+            Canvas canvas, DrawDimensions drawDimensions, ReadonlyPiecePositionIndex piecePositions,
+            ImmutableList<Pair<Pos, Direction>> overlapErrors,
+            long draggedPieces, float dragDeltaX, float dragDeltaY) {
         drawGridLines(canvas, drawDimensions);
 
         final int n = piecePositions.size();
@@ -115,24 +123,20 @@ class RectGridDrawer implements GridDrawer {
         }
 
         // Draw overlap errors
-        for (int i = 0; i < n; ++i) {
-            Pos pos = piecePositions.get(i);
-            if (!Util.isDragged(draggedPieces, i)) {
-                int j = piecePositions.indexOf(pos.x - 1, pos.y);
-                if (j != -1 && !Util.isDragged(draggedPieces, j) &&
-                        (!RectDirection.LEFT.hasPath(i) || !RectDirection.RIGHT.hasPath(j))) {
+        for (Pair<Pos, Direction> error : overlapErrors) {
+            Pos pos = error.first;
+            switch ((RectDirection) error.second) {
+                case LEFT:
                     drawDrawable(canvas, drawDimensions, overlapVertiDrawable,
                             pos.x - 0.25f, (float) pos.y, pos.x + 0.25f, pos.y + 1.0f,
                             0.0f, 0.0f, null);
-                }
+                    break;
 
-                j = piecePositions.indexOf(pos.x, pos.y - 1);
-                if (j != -1 && !Util.isDragged(draggedPieces, i) &&
-                        (!RectDirection.UP.hasPath(i) || !RectDirection.DOWN.hasPath(j))) {
+                case UP:
                     drawDrawable(canvas, drawDimensions, overlapHorizDrawable,
                             pos.x, pos.y - 0.25f, pos.x + 1.0f, pos.y + 0.25f,
                             0.0f, 0.0f, null);
-                }
+                    break;
             }
         }
 
