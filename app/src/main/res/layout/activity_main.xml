@@ -13,4 +13,43 @@
         android:layout_height="match_parent">
 
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/solved_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/colorAccent"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/solved_title"
+            android:textColor="#000000"
+            android:textSize="14pt" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/solved_reset_pieces_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/reset_puzzle_pieces" />
+
+            <Button
+                android:id="@+id/solved_continue_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/solved_finish" />
+        </LinearLayout>
+    </LinearLayout>
+
 </FrameLayout>

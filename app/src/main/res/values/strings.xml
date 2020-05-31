@@ -23,4 +23,7 @@
     <string name="instructions2_control3">• <b>Pinch</b> to zoom in</string>
     <string name="instructions2_previous_button">Back to Rules</string>
     <string name="instructions2_next_button">Continue to Tutorial</string>
+
+    <string name="solved_title">Puzzle solved!</string>
+    <string name="solved_finish">Continue</string>
 </resources>

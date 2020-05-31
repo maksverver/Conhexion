@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.TranslateAnimation;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -28,6 +29,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FragmentId currentFragmentId = FragmentId.NONE;
     private @Nullable Solution.Progress rectPuzzleProgress = null;
     private @Nullable Solution.Progress hexPuzzleProgress = null;
+
+    private View solvedView;
+    private boolean solvedViewShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 onHexPiecePositionsChanged(hexPuzzlePiecePositions);
             }
         });
+
+        solvedView = findViewById(R.id.solved_view);
+        solvedView.setVisibility(View.INVISIBLE);
+        solvedViewShown = false;
     }
 
     @Override
@@ -103,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.reset_puzzle_pieces:
                 promptResetPiecePositions();
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -162,6 +171,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.replay_hex_puzzle:
                 activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE);
                 return;
+
+            case R.id.solved_reset_pieces_button:
+                promptResetPiecePositions();
+                return;
+
+            case R.id.solved_continue_button:
+                if (currentFragmentId == FragmentId.RECT_PUZZLE) {
+                    activeFragmentIdLiveData.setValue(FragmentId.RECT_PUZZLE_SOLVED);
+                    return;
+                }
+                if (currentFragmentId == FragmentId.HEX_PUZZLE) {
+                    activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE_SOLVED);
+                    return;
+                }
+
         }
         LogUtil.w("Unknown view clicked: %s", v);
     }
@@ -179,26 +203,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         LogUtil.i("Switching main fragment to %s", newFragmentId);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        if ((currentFragmentId == FragmentId.RECT_PUZZLE && newFragmentId == FragmentId.RECT_PUZZLE_SOLVED) ||
-            (currentFragmentId == FragmentId.HEX_PUZZLE && newFragmentId == FragmentId.HEX_PUZZLE_SOLVED)) {
-            transaction.setCustomAnimations(R.anim.puzzle_solved_fade_in, R.anim.puzzle_solved_fade_out);
-        } else {
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        }
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.replace(R.id.fragment_container, newFragment, newFragmentId.name());
         transaction.commit();
         currentFragmentId = newFragmentId;
-
-        if ((newFragmentId == FragmentId.RECT_PUZZLE && rectPuzzleProgress != null && rectPuzzleProgress.isSolved()) ||
-            (newFragmentId == FragmentId.HEX_PUZZLE && hexPuzzleProgress != null && hexPuzzleProgress.isSolved())) {
-            promptResetPiecePositions();
-        }
+        solvedView.setVisibility(View.INVISIBLE);
+        solvedViewShown = false;
     }
 
     private void onRectPiecePositionsChanged(ImmutableList<Pos> piecePositions) {
-        Solution.Progress oldProgress = rectPuzzleProgress;
+        Solution.Progress oldRectPuzzleProgress = rectPuzzleProgress;
         rectPuzzleProgress = Solution.calculateProgress(piecePositions, RectDirection.VALUES);
-        if (rectPuzzleProgress.isSolved() && oldProgress != null && !oldProgress.isSolved()) {
+        if (oldRectPuzzleProgress == null) {
+            // This is the first time progress is calculated, probably because we first loaded
+            // this view. Don't update the solved view in this case.
+            return;
+        }
+        if (rectPuzzleProgress.isSolved() && !oldRectPuzzleProgress.isSolved()) {
             LogUtil.i("Rect puzzle is solved!");
             RectPuzzleFragment rectPuzzleFragment =
                     (RectPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.RECT_PUZZLE.name());
@@ -207,15 +228,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (rectGridView != null) {
                     rectGridView.startVictoryAnimation();
                 }
+                showSolvedView();
             }
-            activeFragmentIdLiveData.setValue(FragmentId.RECT_PUZZLE_SOLVED);
+        }
+
+        if (!rectPuzzleProgress.isSolved() && oldRectPuzzleProgress.isSolved()) {
+            hideSolvedView();
         }
     }
 
     private void onHexPiecePositionsChanged(ImmutableList<Pos> piecePositions) {
-        Solution.Progress oldProgress = hexPuzzleProgress;
+        Solution.Progress oldHexPuzzleProgress = hexPuzzleProgress;
         hexPuzzleProgress = Solution.calculateProgress(piecePositions, HexDirection.VALUES);
-        if (hexPuzzleProgress.isSolved() && oldProgress != null && !oldProgress.isSolved()) {
+        if (oldHexPuzzleProgress == null) {
+            // This is the first time progress is calculated, probably because we first loaded
+            // this view. Don't update the solved view in this case.
+            return;
+        }
+        if (hexPuzzleProgress.isSolved() && !oldHexPuzzleProgress.isSolved()) {
             LogUtil.i("Hex puzzle is solved!");
             HexPuzzleFragment hexPuzzleFragment =
                     (HexPuzzleFragment) getSupportFragmentManager().findFragmentByTag(FragmentId.HEX_PUZZLE.name());
@@ -224,9 +254,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (hexGridView != null) {
                     hexGridView.startVictoryAnimation();
                 }
+                showSolvedView();
             }
-            activeFragmentIdLiveData.setValue(FragmentId.HEX_PUZZLE_SOLVED);
         }
+        if (!hexPuzzleProgress.isSolved() && oldHexPuzzleProgress.isSolved()) {
+            hideSolvedView();
+        }
+    }
+
+    private void showSolvedView() {
+        solvedView.setVisibility(View.VISIBLE);
+        if (!solvedViewShown) {
+            TranslateAnimation animation = new TranslateAnimation(0, 0, solvedView.getHeight(), 0);
+            animation.setStartOffset(12000);  // 12 seconds
+            animation.setDuration(1000);  // 1 seconds
+            solvedView.startAnimation(animation);
+            solvedView.findViewById(R.id.solved_continue_button).setOnClickListener(this);
+            solvedView.findViewById(R.id.solved_reset_pieces_button).setOnClickListener(this);
+        }
+        solvedViewShown = true;
+    }
+
+    private void hideSolvedView() {
+        if (solvedViewShown) {
+            TranslateAnimation animation = new TranslateAnimation(0, 0, 0, solvedView.getHeight());
+            animation.setDuration(500);  // 0.5 seconds
+            solvedView.startAnimation(animation);
+            solvedView.setOnClickListener(null);
+            solvedView.findViewById(R.id.solved_continue_button).setOnClickListener(null);
+            solvedView.findViewById(R.id.solved_reset_pieces_button).setOnClickListener(null);
+        }
+        solvedView.setVisibility(View.INVISIBLE);
+        solvedViewShown = false;
     }
 
     @Nullable

@@ -13,14 +13,14 @@
         android:text="Congratulations!"
         android:textSize="20pt"
         android:textStyle="bold"
-        android:textColor="@color/colorPrimary"
-        />
+        android:textColor="@color/colorPrimary" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
+        android:padding="16dp"
         android:text="You solved the tutorial!\n\nAre you ready for the real puzzle?"
         android:textSize="14pt" />
 
