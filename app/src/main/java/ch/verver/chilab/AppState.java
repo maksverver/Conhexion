@@ -54,8 +54,13 @@ public class AppState extends AndroidViewModel {
         return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
+    /** Public constructor, called by the framework. Do not call this directly! */
     public AppState(Application application) {
         super(application);
+
+        // Restore values from shared preferences. Since this does disk I/O, it strictly speaking
+        // should be done in a background thread, but it's probably fast enough that it doesn't make
+        // a noticeable difference in practice.
         restoreFromSharedPreferences();
         fillInMissingFields();
     }

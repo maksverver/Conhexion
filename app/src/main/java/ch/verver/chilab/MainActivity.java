@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -33,8 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        appState = new ViewModelProvider.AndroidViewModelFactory(getApplication()).create(AppState.class);
         // appState has already been restored from SharedPreferences in App.onCreate().
-        appState = App.getAppState();
+        appState = ((App) getApplication()).getAppState();
 
         if (savedInstanceState == null && getIntent() != null) {
             // Restore app state from intent extras. This allows overriding part of the app state
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onPause() {
-        App.getAppState().saveToSharedPreferences();
+        ((App) getApplication()).getAppState().saveToSharedPreferences();
         super.onPause();
     }
 

@@ -9,7 +9,6 @@
 
 Cleanup:
   - Maybe: precalculate overlap-errors and pass them in to the drawer to save time during draw?
-  - Maybe: figure out how to obtain AndroidViewModel in fragments, instead of creating a static singleton in the App class.
   - Maybe: use SavedStateHandle to persist AppState instead of SharedPreferences?
     (Would require making ImmutableList and Pos Serializable/Parcelable?)
 

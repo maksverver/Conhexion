@@ -3,23 +3,14 @@ package ch.verver.chilab;
 import android.app.Application;
 
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStore;
 
 public class App extends Application {
-    private static AppState appState;
+    private ViewModelProvider viewModelProvider = new ViewModelProvider(
+            new ViewModelStore(),
+            new ViewModelProvider.AndroidViewModelFactory(this));
 
-    static AppState getAppState() {
-        if (appState == null) {
-            throw new IllegalStateException("Application has not been created yet");
-        }
-        return appState;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        appState = new ViewModelProvider.AndroidViewModelFactory(this).create(AppState.class);
-
-        LogUtil.i("Application created");
+    AppState getAppState() {
+        return viewModelProvider.get(AppState.class);
     }
 }

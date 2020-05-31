@@ -22,7 +22,8 @@ public class RectPuzzleFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_rect_puzzle, container, false);
         RectGridView rectGridView = rootView.findViewById(R.id.rect_grid_view);
-        rectGridView.setPiecePositionsLiveData(this, App.getAppState().getRectPuzzlePiecePositions());
+        rectGridView.setPiecePositionsLiveData(this,
+                ((App) getActivity().getApplication()).getAppState().getRectPuzzlePiecePositions());
         return rootView;
     }
 
