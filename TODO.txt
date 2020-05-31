@@ -1,19 +1,14 @@
   - Take some screenshots: rules, rect puzzle solved, hex puzzle in progress
-  - Allow BaseGridView to take up more space (especially useful in horizontal mode):
-        - Hide app bar / replace with a floating button?
-        - Fullscreen mode? (Always on, or optional?)
-          https://developer.android.com/training/system-ui/immersive
+  - Auto-save e.g. 15 seconds after a change is made
   - Maybe: rename to avoid spoilers? (But include a link / give some credits!)
-  - Change "reset pieces?" dialog to a floating button that pops up whenever the grid is solved?
-    (Should still require confirmation!)
 
 Cleanup:
   - Maybe: use SavedStateHandle to persist AppState instead of SharedPreferences?
     (Would require making ImmutableList and Pos Serializable/Parcelable?)
 
 Stretch goals:
-  - Auto-save e.g. 15 seconds after a change is made
-  - Option to rotate hex grid by 60 degrees?
+  - Floating button to show context menu (instead of on App Bar)
+  - Option to rotate hex grid by 90 degrees?
     Or just rotate the grid by default, so that the hexagons have a diagonal pointing
     straight up, which makes it easier to construct symmetric solution in portrait
     orientation.
