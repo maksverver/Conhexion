@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             appState.restoreFromIntentExtras(getIntent().getExtras());
         }
 
+        AutoSaver.attach(appState, this);
+
         activeFragmentIdLiveData = appState.getActiveFragmentId();
         FragmentId fragmentId = activeFragmentIdLiveData.getValue();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentId.name());
@@ -80,12 +82,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         solvedView = findViewById(R.id.solved_view);
         solvedView.setVisibility(View.INVISIBLE);
         solvedViewShown = false;
-    }
-
-    @Override
-    protected void onPause() {
-        ((App) getApplication()).getAppState().saveToSharedPreferences();
-        super.onPause();
     }
 
     @Override

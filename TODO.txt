@@ -1,5 +1,4 @@
   - Take some screenshots: rules, rect puzzle solved, hex puzzle in progress
-  - Auto-save e.g. 15 seconds after a change is made
   - Maybe: rename to avoid spoilers? (But include a link / give some credits!)
 
 Cleanup:
