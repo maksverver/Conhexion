@@ -1,5 +1,4 @@
   - Take some screenshots: rules, rect puzzle solved, hex puzzle in progress
-  - Maybe: rename to avoid spoilers? (But include a link / give some credits!)
 
 Cleanup:
   - Maybe: use SavedStateHandle to persist AppState instead of SharedPreferences?

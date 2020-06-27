@@ -1,10 +1,15 @@
-This app implements a puzzle that was originally conceived by Martin Medema,
-and titled "The China Labyrinth":
+Conhexion is a tiling puzzle that was originally conceived by Martin Medema,
+who called it "The China Labyrinth":
 http://www.mindsports.nl/index.php/puzzles/tilings/china-labyrinth/
 
+I released this app under a different name to avoid spoiling the solution, and
+because I thought the original name was not very fitting: the puzzle is not
+Chinese and does not involve constructing a labyrinth (though with some
+imagination solutions could be said to resemble the Great Wall of China).
+
 The goal is to mark 64 fields on a hexagonal grid, so that each marked field
-differs from the others in terms of which marked fields are adjacent. (This
-matches the notion of "transcendental solutions" on the page above.)
+differs from the others in terms of which adjacent fields are marked too. (This
+matches the notion of "transcendental solutions" on the MindSports page.)
 
 This app presents the puzzle in a slightly different way:
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">China Labyrinth</string>
+    <string name="app_name">Conhexion</string>
 
     <string name="menu_switch_to_instructions">Show instructions</string>
     <string name="menu_switch_to_hex_puzzle">Switch to puzzle</string>

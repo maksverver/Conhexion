@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".RectPuzzleFragment">
 
-    <ch.verver.chilab.RectGridView
+    <ch.verver.conhexion.RectGridView
         android:id="@+id/rect_grid_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -3,13 +3,13 @@ that launches MainActivity.
 
 For example, to override rectangular puzzle pieces:
 
-% adb shell am start-activity -n ch.verver.chilab/.MainActivity --activity-clear-task \
+% adb shell am start-activity -n ch.verver.conhexion/.MainActivity --activity-clear-task \
     --es active-fragment RECT_PUZZLE \
     --es rect-pieces 4,11,1,7,2,8,2,5,5,9,4,10,2,6,4,6,5,10,4,8,3,8,5,8,3,7,3,6,2,7
 
 Or to override hexagonal puzzle pieces:
 
-% adb shell am start-activity -n ch.verver.chilab/.MainActivity --activity-clear-task \
+% adb shell am start-activity -n ch.verver.conhexion/.MainActivity --activity-clear-task \
     --es active-fragment HEX_PUZZLE \
     --es hex-pieces 0,2,1,0,11,18,1,3,10,2,11,9,4,4,0,-1,6,1,10,1,12,12,5,15,11,16,4,3,12,11,2,-1,12,2,7,-1,10,14,11,0,8,7,4,17,5,11,13,16,13,8,5,7,5,16,5,2,10,7,12,9,11,17,2,2,5,17,11,2,5,4,5,-1,7,9,7,8,0,15,12,1,13,18,12,6,9,7,1,12,8,11,1,9,12,10,14,11,6,4,6,16,13,11,8,14,4,9,7,11,12,18,6,3,13,9,8,10,13,17,6,8,13,10,12,17,5,3
 
@@ -26,15 +26,15 @@ the same as those used to store app state in SharedPreferences.
 To dump the contents of SharedPreferences (on an emulator or rooted device):
 
 % adb root
-% adb shell cat /data/data/ch.verver.chilab/shared_prefs/main-prefs.xml
+% adb shell cat /data/data/ch.verver.conhexion/shared_prefs/main-prefs.xml
 
 Another way to get values (which also works on user devices) is to enable
 debug-level logging, in which case app state updates will be logged to logcat:
 
-% adb shell setprop log.tag.ChiLab DEBUG
-% adb logcat -s ChiLab
+% adb shell setprop log.tag.Conhexion DEBUG
+% adb logcat -s Conhexion
 ...
-D ChiLab  : AppState: rect-pieces = 0,1,0,5,3,4,2,0,0,3,4,1,1,4,1,0,1,5,4,5,2,1,2,3,1,2,3,2,4,3
+D Conhexion  : AppState: rect-pieces = 0,1,0,5,3,4,2,0,0,3,4,1,1,4,1,0,1,5,4,5,2,1,2,3,1,2,3,2,4,3
 ...
 
 Example solved states:
