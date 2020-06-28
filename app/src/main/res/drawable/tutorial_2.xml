@@ -8,167 +8,97 @@
         android:pathData="M134.213,65.355l0,-75l75,-0l0,75z"/>
     <path
         android:pathData="M159.213,40.355m0,35.355a35.355,35.355 0,1 1,0 -70.71a35.355,35.355 0,1 1,0 70.71"
-        android:strokeAlpha="1"
-        android:strokeLineJoin="bevel"
-        android:strokeWidth="1"
-        android:fillColor="#8f008f"
-        android:strokeColor="#00000000"
-        android:fillAlpha="1"
-        android:strokeLineCap="round"/>
+        android:fillColor="@color/rectTileBackground"
+        android:fillAlpha="1"/>
   </group>
   <path
       android:pathData="M149.213,65.355l0,-25l10,-0l0,25z"
-      android:fillColor="#e57300"
+      android:fillColor="@color/rectBeamLeft"
       android:fillAlpha="1"/>
   <path
       android:pathData="m159.213,65.355 l-0,-25 10,-10l0,35z"
-      android:fillColor="#cc6700"
+      android:fillColor="@color/rectBeamRight"
       android:fillAlpha="1"/>
   <path
       android:pathData="m134.213,50.355l15,-0l10,-10l-25,-0z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#994e00"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamBottom"
+      android:fillAlpha="1"/>
   <path
       android:pathData="m134.213,40.355l0,-10l35,-0l-10,10z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ff8100"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamTop"
+      android:fillAlpha="1"/>
   <group>
     <clip-path
         android:pathData="M134.213,90.355l-75,-0l-0,-100l75,-0z"/>
     <path
         android:pathData="M109.213,40.355m35.355,-0a35.355,35.355 0,1 1,-70.71 -0a35.355,35.355 0,1 1,70.71 -0"
-        android:strokeAlpha="1"
-        android:strokeLineJoin="bevel"
-        android:strokeWidth="1"
-        android:fillColor="#8f008f"
-        android:strokeColor="#00000000"
-        android:fillAlpha="1"
-        android:strokeLineCap="round"/>
+        android:fillColor="@color/rectTileBackground"
+        android:fillAlpha="1"/>
   </group>
   <path
       android:pathData="m134.213,30.355 l-30,0 -5,10 35,-0z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ff8100"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamTop"
+      android:fillAlpha="1"/>
   <path
       android:pathData="m134.213,40.355l-0,10l-30,0 -5,-10z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#994d00"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamBottom"
+      android:fillAlpha="1"/>
   <group>
     <clip-path
         android:pathData="M134.213,115.355l-75,-0l-0,-75l75,-0z"/>
     <path
         android:pathData="M109.213,90.355m35.355,-0a35.355,35.355 0,1 1,-70.71 -0a35.355,35.355 0,1 1,70.71 -0"
-        android:strokeAlpha="1"
-        android:strokeLineJoin="bevel"
-        android:strokeWidth="1"
-        android:fillColor="#8f008f"
-        android:strokeColor="#00000000"
-        android:fillAlpha="1"
-        android:strokeLineCap="round"/>
+        android:fillColor="@color/rectTileBackground"
+        android:fillAlpha="1"/>
   </group>
   <path
       android:pathData="M134.213,100.355l-25,-0l-0,-10l25,-0z"
-      android:fillColor="#994d00"
+      android:fillColor="@color/rectBeamBottom"
       android:fillAlpha="1"/>
   <path
       android:pathData="m134.213,90.355 l-25,0 -10,-10l35,-0z"
-      android:fillColor="#ff8100"
+      android:fillColor="@color/rectBeamTop"
       android:fillAlpha="1"/>
   <path
       android:pathData="m119.213,115.355l-0,-15l-10,-10l-0,25z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#cc6700"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamRight"
+      android:fillAlpha="1"/>
   <path
       android:pathData="m109.213,115.355l-10,-0l-0,-35l10,10z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#e57300"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamLeft"
+      android:fillAlpha="1"/>
   <path
       android:pathData="M109.244,55A35.355,35.355 0,0 0,84.276 65.353,35.355 35.355,0 0,0 109.244,75.71 35.355,35.355 0,0 0,134.213 65.357,35.355 35.355,0 0,0 109.244,55Z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="bevel"
-      android:strokeWidth="1"
       android:fillColor="#ff0000"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="round"/>
+      android:fillAlpha="1"/>
   <group>
     <clip-path
         android:pathData="M134.213,65.355h75v75h-75z"/>
     <path
         android:pathData="M159.213,90.355m-35.355,0a35.355,35.355 0,1 1,70.71 0a35.355,35.355 0,1 1,-70.71 0"
-        android:strokeAlpha="1"
-        android:strokeLineJoin="bevel"
-        android:strokeWidth="1"
-        android:fillColor="#8f008f"
-        android:strokeColor="#00000000"
-        android:fillAlpha="1"
-        android:strokeLineCap="round"/>
+        android:fillColor="@color/rectTileBackground"
+        android:fillAlpha="1"/>
   </group>
   <path
       android:pathData="M134.213,80.355h25v10h-25z"
-      android:fillColor="#ff8100"
+      android:fillColor="@color/rectBeamTop"
       android:fillAlpha="1"/>
   <path
       android:pathData="m134.213,90.355 l25,-0 10,10h-35z"
-      android:fillColor="#994d00"
+      android:fillColor="@color/rectBeamBottom"
       android:fillAlpha="1"/>
   <path
       android:pathData="m149.213,65.355v15l10,10v-25z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#e57300"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamLeft"
+      android:fillAlpha="1"/>
   <path
       android:pathData="m159.213,65.355h10v35l-10,-10z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#cc6700"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillColor="@color/rectBeamRight"
+      android:fillAlpha="1"/>
   <path
       android:pathData="m26.213,58.284 l14.142,-14.142 7.071,7.071 -14.142,14.142 14.142,14.142 -7.071,7.071L26.213,72.426l-14.142,14.142 -7.071,-7.071 14.142,-14.142 -14.142,-14.142 7.071,-7.071L26.213,58.284v0"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
       android:fillColor="#ff0000"
-      android:strokeColor="#00000000"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+      android:fillAlpha="1"/>
   <path
       android:pathData="M64.213,65.355m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
       android:fillColor="#b2b2b2"
