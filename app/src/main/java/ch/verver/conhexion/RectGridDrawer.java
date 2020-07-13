@@ -58,8 +58,8 @@ class RectGridDrawer implements GridDrawer<RectDirection> {
                 R.drawable.rect_13_front,
                 R.drawable.rect_14_front,
                 R.drawable.rect_15_front);
-        overlapHorizDrawable = ResourcesCompat.getDrawable(res, R.drawable.rect_overlap_horiz, theme);
-        overlapVertiDrawable = ResourcesCompat.getDrawable(res, R.drawable.rect_overlap_verti, theme);
+        overlapHorizDrawable = ResourcesCompat.getDrawable(res, R.drawable.rect_overlap_horiz, theme).mutate();
+        overlapVertiDrawable = ResourcesCompat.getDrawable(res, R.drawable.rect_overlap_verti, theme).mutate();
 
         gridStrokePaint = new Paint();
         gridStrokePaint.setColor(ResourcesCompat.getColor(res, R.color.rectGridGridLines, theme));
@@ -74,7 +74,7 @@ class RectGridDrawer implements GridDrawer<RectDirection> {
             Resources res, @Nullable Resources.Theme theme, int... resourceIds) {
         Drawable[] drawables = new Drawable[resourceIds.length];
         for (int i = 0; i < drawables.length; ++i) {
-            drawables[i] = ResourcesCompat.getDrawable(res, resourceIds[i], theme);
+            drawables[i] = ResourcesCompat.getDrawable(res, resourceIds[i], theme).mutate();
         }
         return drawables;
     }

@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -28,11 +29,42 @@ class HexGridDrawer implements GridDrawer<HexDirection> {
             HexDirection.NORTH_EAST, HexDirection.SOUTH_EAST, HexDirection.SOUTH);
 
     private final Paint hexGridLinesPaint;
-    private final Drawable tileBackground;
-    private final Drawable tileCenter;
-    private final EnumMap<HexDirection, Drawable> tileBeams;
-    private final EnumMap<HexDirection, Drawable> tileBacksides;
+    private final DrawablePiece[] drawablePieces;
     private final EnumMap<HexDirection, Drawable> tileOverlapErrors;
+
+    private class DrawablePiece {
+        private final Drawable background;
+        private final Drawable center;
+        private final ImmutableList<Drawable> backsides;
+        private final ImmutableList<Drawable> beams;
+
+        DrawablePiece(
+                Drawable background,
+                Drawable center,
+                ImmutableList<Drawable> backsides,
+                ImmutableList<Drawable> beams) {
+            this.background = background;
+            this.center = center;
+            this.backsides = backsides;
+            this.beams = beams;
+        }
+
+        void draw(Canvas canvas, DrawDimensions drawDimensions,
+                  Pos pos, float dragOffsetX, float dragOffsetY,
+                @Nullable ColorFilter backColorFilter, @Nullable ColorFilter frontColorFilter) {
+            Rect bounds = getTileBounds(drawDimensions, pos, dragOffsetX, dragOffsetY);
+
+            HexGridDrawer.draw(canvas, bounds, background, backColorFilter);
+            for (Drawable backside : backsides) {
+                HexGridDrawer.draw(canvas, bounds, backside, backColorFilter);
+            }
+
+            HexGridDrawer.draw(canvas, bounds, center, frontColorFilter);
+            for (Drawable beam : beams) {
+                HexGridDrawer.draw(canvas, bounds, beam, frontColorFilter);
+            }
+        }
+    }
 
     public HexGridDrawer(Resources res, @Nullable Resources.Theme theme) {
         hexGridLinesPaint = new Paint();
@@ -40,29 +72,56 @@ class HexGridDrawer implements GridDrawer<HexDirection> {
         hexGridLinesPaint.setStyle(Paint.Style.STROKE);
         hexGridLinesPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        tileBackground = ResourcesCompat.getDrawable(res, R.drawable.hex_background, theme);
-        tileCenter = ResourcesCompat.getDrawable(res, R.drawable.hex_center, theme);
-
-        tileBeams = new EnumMap<>(HexDirection.class);
-        tileBeams.put(HexDirection.NORTH, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_north, theme));
-        tileBeams.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_north_east, theme));
-        tileBeams.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_south_east, theme));
-        tileBeams.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_south, theme));
-        tileBeams.put(HexDirection.SOUTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_south_west, theme));
-        tileBeams.put(HexDirection.NORTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_beam_north_west, theme));
-
-        tileBacksides = new EnumMap<>(HexDirection.class);
-        tileBacksides.put(HexDirection.NORTH, ResourcesCompat.getDrawable(res, R.drawable.hex_back_north, theme));
-        tileBacksides.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_back_north_east, theme));
-        tileBacksides.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_back_south_east, theme));
-        tileBacksides.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_back_south, theme));
-        tileBacksides.put(HexDirection.SOUTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_back_south_west, theme));
-        tileBacksides.put(HexDirection.NORTH_WEST, ResourcesCompat.getDrawable(res, R.drawable.hex_back_north_west, theme));
+        drawablePieces = createDrawablePieces(res, theme);
 
         tileOverlapErrors = new EnumMap<>(HexDirection.class);
-        tileOverlapErrors.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_error_north_east, theme));
-        tileOverlapErrors.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_error_south_east, theme));
-        tileOverlapErrors.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_error_south, theme));
+        tileOverlapErrors.put(HexDirection.NORTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_error_north_east, theme).mutate());
+        tileOverlapErrors.put(HexDirection.SOUTH_EAST, ResourcesCompat.getDrawable(res, R.drawable.hex_error_south_east, theme).mutate());
+        tileOverlapErrors.put(HexDirection.SOUTH, ResourcesCompat.getDrawable(res, R.drawable.hex_error_south, theme).mutate());
+    }
+
+    private DrawablePiece[] createDrawablePieces(Resources res, @Nullable Resources.Theme theme) {
+        EnumMap<HexDirection, Integer> beamDrawableIds = new EnumMap<>(HexDirection.class);
+        beamDrawableIds.put(HexDirection.NORTH, R.drawable.hex_beam_north);
+        beamDrawableIds.put(HexDirection.NORTH_EAST, R.drawable.hex_beam_north_east);
+        beamDrawableIds.put(HexDirection.SOUTH_EAST, R.drawable.hex_beam_south_east);
+        beamDrawableIds.put(HexDirection.SOUTH, R.drawable.hex_beam_south);
+        beamDrawableIds.put(HexDirection.SOUTH_WEST, R.drawable.hex_beam_south_west);
+        beamDrawableIds.put(HexDirection.NORTH_WEST, R.drawable.hex_beam_north_west);
+
+        EnumMap<HexDirection, Integer> backDrawableIds = new EnumMap<>(HexDirection.class);
+        backDrawableIds.put(HexDirection.NORTH, R.drawable.hex_back_north);
+        backDrawableIds.put(HexDirection.NORTH_EAST, R.drawable.hex_back_north_east);
+        backDrawableIds.put(HexDirection.SOUTH_EAST, R.drawable.hex_back_south_east);
+        backDrawableIds.put(HexDirection.SOUTH, R.drawable.hex_back_south);
+        backDrawableIds.put(HexDirection.SOUTH_WEST, R.drawable.hex_back_south_west);
+        backDrawableIds.put(HexDirection.NORTH_WEST, R.drawable.hex_back_north_west);
+
+        DrawablePiece[] drawablePieces = new DrawablePiece[HexPuzzle.PIECE_COUNT];
+        Drawable[] beamsBuffer = new Drawable[6];
+        Drawable[] backsBuffer = new Drawable[6];
+        for (int i = 0; i < drawablePieces.length; ++i) {
+            // Calling mutate() creates a private copy of the loaded resource. This is necessary
+            // because on API level 26, applying a color filter to the shared resource affects all
+            // other drawables (even if the color filter is cleared between draw() calls) which
+            // leads to incorrect rendering of selected pieces (specifically, it causes parts of
+            // non-selected pieces to be highlighted as well).
+            Drawable background = ResourcesCompat.getDrawable(res, R.drawable.hex_background, theme).mutate();
+            Drawable center = ResourcesCompat.getDrawable(res, R.drawable.hex_center, theme).mutate();
+            int beamsCount = 0;
+            int backsCount = 0;
+            for (HexDirection direction : BEAM_DRAW_ORDER) {
+                if (direction.hasPath(i)) {
+                    beamsBuffer[beamsCount++] = ResourcesCompat.getDrawable(res, beamDrawableIds.get(direction), theme).mutate();
+                } else {
+                    backsBuffer[backsCount++] = ResourcesCompat.getDrawable(res, backDrawableIds.get(direction), theme).mutate();
+                }
+            }
+            drawablePieces[i] = new DrawablePiece(background, center,
+                    ImmutableList.copyOf(backsBuffer, backsCount),
+                    ImmutableList.copyOf(beamsBuffer, beamsCount));
+        }
+        return drawablePieces;
     }
 
     @Override
@@ -250,24 +309,7 @@ class HexGridDrawer implements GridDrawer<HexDirection> {
     private void drawPiece(Canvas canvas, DrawDimensions drawDimensions, int pieceIndex, Pos pos,
                            float dragOffsetX, float dragOffsetY,
                            @Nullable ColorFilter backColorFilter, @Nullable ColorFilter frontColorFilter) {
-        Rect bounds = getTileBounds(drawDimensions, pos, dragOffsetX, dragOffsetY);
-
-        draw(canvas, bounds, tileBackground, backColorFilter);
-
-        for (HexDirection direction : BEAM_DRAW_ORDER) {
-            if (!direction.hasPath(pieceIndex)) {
-                draw(canvas, bounds, tileBacksides.get(direction), backColorFilter);
-            }
-        }
-
-        draw(canvas, bounds, tileCenter, frontColorFilter);
-
-        // Order in which beams are drawn matters! We want to draw back-to-front.
-        for (HexDirection direction : BEAM_DRAW_ORDER) {
-            if (direction.hasPath(pieceIndex)) {
-                draw(canvas, bounds, tileBeams.get(direction), frontColorFilter);
-            }
-        }
+        drawablePieces[pieceIndex].draw(canvas, drawDimensions, pos, dragOffsetX, dragOffsetY, backColorFilter, frontColorFilter);
     }
 
     private void drawOverlapErrors(Canvas canvas, DrawDimensions drawDimensions,
