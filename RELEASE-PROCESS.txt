@@ -1,0 +1,16 @@
+Update version name + version code in app/build.gradle, commit.
+
+Add tag (e.g. `git tag v1.2.3`).
+
+Push to GitHub.
+
+
+In Android Studio: Generate Signed Bundle or APK (using my Google Play Store key).
+
+mv app/release/app-release.apk Conhexion-v1.2.3.apk
+
+
+Go to https://play.google.com/apps/publish, create a new app release, upload APK, publish.
+
+
+Go to https://github.com/maksverver/Conhexion/releases, create a new release, attach APK.
