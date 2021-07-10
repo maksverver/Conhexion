@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         solvedView = findViewById(R.id.solved_view);
         solvedView.setVisibility(View.INVISIBLE);
         solvedViewShown = false;
+
+        // Hide the app title in the action bar (most useful when using the transparent theme).
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
 
     @Override

@@ -1,8 +1,35 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+    <!-- Transparent action bar style, borrowed from:
+         https://stackoverflow.com/questions/26558705/material-design-transparent-actionbar -->
+    <style name="TransparentActionBar" parent="Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="android:background">@null</item>
+        <!-- Support library compatibility -->
+        <item name="background">@null</item>
+    </style>
+
+    <style name="AppTheme.TransparentActionBar" parent="Theme.AppCompat">
         <!-- Customize your theme here. -->
+        <item name="android:actionBarStyle">@style/TransparentActionBar</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/TransparentActionBar</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <!-- Base application theme.
+
+    Choose one of the following parent themes:
+
+      - Theme.AppCompat: solid action bar with settings menu (takes up a lot of space!)
+      - Theme.AppCompat.NoActionBar: no action bar; more space for the game grid, but no way
+        to access the settings menu
+      - AppTheme.TransparentActionBar: transparent action bar that allows access
+        to settings without taking up space
+
+    -->
+    <!-- Choose one of the above themes as the parent theme. -->
+    <style name="AppTheme" parent="AppTheme.TransparentActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
