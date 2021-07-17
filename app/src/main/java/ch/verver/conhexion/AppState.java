@@ -18,6 +18,7 @@ public class AppState extends AndroidViewModel {
     private static final String RECT_PIECES_KEY = "rect-pieces";
     private static final String HEX_PIECES_KEY = "hex-pieces";
     private static final String ACTIVE_FRAGMENT_ID_KEY = "active-fragment";
+    private static final String ERROR_VISIBILITY_KEY = "error-visibility";
 
     private MutableLiveData<FragmentId> activeFragmentId = new MutableLiveData<FragmentId>() {
         @Override
@@ -49,6 +50,7 @@ public class AppState extends AndroidViewModel {
             LogUtil.d("AppState: %s = %s", HEX_PIECES_KEY, HexPuzzle.encode(value));
         }
     };
+    private MutableLiveData<ErrorVisibility> errorVisibility = new MutableLiveData<ErrorVisibility>();
 
     private static SharedPreferences getSharedPreferences(Context context) {
         return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -77,6 +79,10 @@ public class AppState extends AndroidViewModel {
         return hexPuzzlePiecePositions;
     }
 
+    public MutableLiveData<ErrorVisibility> getErrorVisibility() {
+        return errorVisibility;
+    }
+
     @MainThread
     public void saveToSharedPreferences() {
         LogUtil.i("AppState: saving to shared preferences");
@@ -84,6 +90,7 @@ public class AppState extends AndroidViewModel {
             .putString(RECT_PIECES_KEY, RectPuzzle.encode(rectPuzzlePiecePositions.getValue()))
             .putString(HEX_PIECES_KEY, HexPuzzle.encode(hexPuzzlePiecePositions.getValue()))
             .putString(ACTIVE_FRAGMENT_ID_KEY, activeFragmentId.getValue().name())
+            .putString(ERROR_VISIBILITY_KEY, encodeErrorVisibility(errorVisibility.getValue()))
             .apply();
     }
 
@@ -101,6 +108,9 @@ public class AppState extends AndroidViewModel {
         if (restoreHexPuzzlePiecePositions(extras)) {
             LogUtil.i("AppState: restored hex puzzle pieces from intent extras");
         }
+        if (restoreErrorVisibility(extras)) {
+            LogUtil.i("AppState: restored error visibility from intent extras");
+        }
     }
 
     private void restoreFromSharedPreferences() {
@@ -108,6 +118,7 @@ public class AppState extends AndroidViewModel {
         restoreActiveFragmentId(prefs);
         restoreRectPuzzlePiecePositions(prefs);
         restoreHexPuzzlePiecePositions(prefs);
+        restoreErrorVisibility(prefs);
         LogUtil.i("AppState: loaded from shared preferences");
     }
 
@@ -123,6 +134,10 @@ public class AppState extends AndroidViewModel {
         if (activeFragmentId.getValue() == null) {
             LogUtil.i("AppState: initializing %s", ACTIVE_FRAGMENT_ID_KEY);
             activeFragmentId.setValue(FragmentId.INSTRUCTIONS1);
+        }
+        if (errorVisibility.getValue() == null) {
+            LogUtil.i("AppState: initializing %s", ERROR_VISIBILITY_KEY);
+            errorVisibility.setValue(ErrorVisibility.VISIBLE);
         }
     }
 
@@ -193,6 +208,34 @@ public class AppState extends AndroidViewModel {
             return false;
         }
         activeFragmentId.setValue(newValue);
+        return true;
+    }
+
+    @Nullable
+    private static String encodeErrorVisibility(@Nullable ErrorVisibility value) {
+        return value == null ? null : value.name();
+    }
+
+    private boolean restoreErrorVisibility(SharedPreferences prefs) {
+        return restoreErrorVisibility(prefs.getString(ERROR_VISIBILITY_KEY, null));
+    }
+
+    private boolean restoreErrorVisibility(Bundle extras) {
+        return restoreErrorVisibility(extras.getString(ERROR_VISIBILITY_KEY, null));
+    }
+
+    private boolean restoreErrorVisibility(@Nullable String encoded) {
+        if (encoded == null) {
+            return false;
+        }
+        ErrorVisibility value;
+        try {
+            value = ErrorVisibility.valueOf(encoded);
+        } catch (IllegalArgumentException e) {
+            LogUtil.w("Invalid error visibility: \"%s\"", encoded);
+            return false;
+        }
+        errorVisibility.setValue(value);
         return true;
     }
 }

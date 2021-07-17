@@ -33,6 +33,7 @@ class AutoSaver implements LifecycleObserver, Runnable {
     private @Nullable FragmentId activeFragmentId;
     private @Nullable ImmutableList<Pos> rectPuzzlePiecePositions;
     private @Nullable ImmutableList<Pos> hexPuzzlePiecePositions;
+    private @Nullable ErrorVisibility errorVisibility;
 
     public static void attach(AppState appState, LifecycleOwner lifecycleOwner) {
         new AutoSaver(appState, lifecycleOwner);
@@ -69,6 +70,17 @@ class AutoSaver implements LifecycleObserver, Runnable {
                     public void onChanged(ImmutableList<Pos> newValue) {
                         ImmutableList<Pos> oldValue = hexPuzzlePiecePositions;
                         hexPuzzlePiecePositions = newValue;
+                        if (oldValue != null && !oldValue.equals(newValue)) {
+                            changed();
+                        }
+                    }
+                });
+        appState.getErrorVisibility().observe(lifecycleOwner,
+                new Observer<ErrorVisibility>() {
+                    @Override
+                    public void onChanged(ErrorVisibility newValue) {
+                        ErrorVisibility oldValue = errorVisibility;
+                        errorVisibility = newValue;
                         if (oldValue != null && !oldValue.equals(newValue)) {
                             changed();
                         }

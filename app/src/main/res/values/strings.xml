@@ -4,6 +4,7 @@
     <string name="menu_switch_to_instructions">Show instructions</string>
     <string name="menu_switch_to_hex_puzzle">Switch to puzzle</string>
     <string name="menu_switch_to_rect_puzzle">Switch to tutorial</string>
+    <string name="menu_errors_visible">Errors visible</string>
 
     <string name="reset_puzzle_pieces">Reset puzzle pieces</string>
     <string name="reset_pieces_dialog_title">Reset puzzle piece positions?</string>

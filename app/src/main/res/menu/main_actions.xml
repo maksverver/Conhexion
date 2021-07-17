@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/toggle_error_visibility"
+        android:title="@string/menu_errors_visible"
+        android:checkable="true"
+        android:checked="true"/>
+    <item
         android:id="@+id/switch_to_instructions"
         android:title="@string/menu_switch_to_instructions" />
     <item

@@ -18,8 +18,9 @@ public class HexPuzzleFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_hex_puzzle, container, false);
         HexGridView hexGridView = rootView.findViewById(R.id.hex_grid_view);
-        hexGridView.setPiecePositionsLiveData(this,
-                ((App) getActivity().getApplication()).getAppState().getHexPuzzlePiecePositions());
+        AppState appState = ((App) getActivity().getApplication()).getAppState();
+        hexGridView.setPiecePositionsLiveData(this, appState.getHexPuzzlePiecePositions());
+        hexGridView.setErrorVisibilityLiveData(this, appState.getErrorVisibility());
         return rootView;
     }
 

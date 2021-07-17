@@ -1,11 +1,8 @@
-  - Take some screenshots: rules, rect puzzle solved, hex puzzle in progress
-
 Cleanup:
   - Maybe: use SavedStateHandle to persist AppState instead of SharedPreferences?
     (Would require making ImmutableList and Pos Serializable/Parcelable?)
 
 Stretch goals:
-  - Floating button to show context menu (instead of on App Bar)
   - Option to rotate hex grid by 90 degrees?
     Or just rotate the grid by default, so that the hexagons have a diagonal pointing
     straight up, which makes it easier to construct symmetric solution in portrait
@@ -14,7 +11,7 @@ Stretch goals:
   - Undo function?
   - Ability to load/save states?
   - Ability to name & upload your solution?
-  - Google Analytics
+  - Google Analytics?
 
 Non-goals:
   - Haptic feedback when selecting pieces. (I implemented it but I didn't like how it felt.)

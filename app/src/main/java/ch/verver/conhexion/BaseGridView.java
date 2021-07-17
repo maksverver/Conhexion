@@ -52,7 +52,7 @@ abstract class BaseGridView<D extends Direction> extends View {
         public void onChanged(ImmutableList<Pos> positions) {
             cancelDrag();
             piecePositions.assign(positions);
-            updateOverlapErrors(0);
+            updateOverlapErrors();
             Rect newGridBounds = piecePositions.getBoundingRect();
             if (!gridBounds.equals(newGridBounds)) {
                 // Grid bounding box has changed!
@@ -64,11 +64,21 @@ abstract class BaseGridView<D extends Direction> extends View {
         }
     };
 
+    private MutableLiveData<ErrorVisibility> errorVisibilityLiveData = null;
+    private Observer<ErrorVisibility> errorVisibilityLiveDataObserver = new Observer<ErrorVisibility>() {
+        @Override
+        public void onChanged(ErrorVisibility errorVisibility) {
+            updateOverlapErrors();
+            invalidate();
+        }
+    };
+
     // Current piece positions
     private final PiecePositionIndex piecePositions = new PiecePositionIndex();
     private final ReadonlyPiecePositionIndex readonlyPiecePositions = piecePositions.readonlyWrapper();
 
-    // List of overlap errors. Recalculated whenever piece positions OR dragged pieces change.
+    // List of overlap errors. Recalculated whenever error visibility, piece positions, or dragged
+    // pieces change.
     private ImmutableList<Pair<Pos, D>> overlapErrors = ImmutableList.empty();
 
     // Current bounding box of piece positions. Updated whenever piece positions change.
@@ -138,6 +148,14 @@ abstract class BaseGridView<D extends Direction> extends View {
         }
         piecePositionsLiveData = newData;
         newData.observe(lifecycleOwner, piecePositionsLiveDataObserver);
+    }
+
+    public void setErrorVisibilityLiveData(LifecycleOwner lifecycleOwner, MutableLiveData<ErrorVisibility> newData) {
+        if (errorVisibilityLiveData != null) {
+            errorVisibilityLiveData.removeObserver(errorVisibilityLiveDataObserver);
+        }
+        errorVisibilityLiveData = newData;
+        newData.observe(lifecycleOwner, errorVisibilityLiveDataObserver);
     }
 
     public void setEditable(boolean newEditable) {
@@ -225,13 +243,17 @@ abstract class BaseGridView<D extends Direction> extends View {
     }
 
     private void draggedPiecesChanged(long draggedPieces) {
-        updateOverlapErrors(draggedPieces);
+        updateOverlapErrors();
     }
 
-    private void updateOverlapErrors(long draggedPieces) {
-        overlapErrors = ImmutableList.copyOf(
-                calculateOverlapErrors(
-                        gridDrawer.getErrorDirections(), piecePositions, draggedPieces));
+    private void updateOverlapErrors() {
+        long draggedPieces = dragState == null ? 0 : dragState.pieces;
+        if (errorVisibilityLiveData.getValue() == ErrorVisibility.VISIBLE) {
+            overlapErrors = ImmutableList.copyOf(calculateOverlapErrors(
+                gridDrawer.getErrorDirections(), piecePositions, draggedPieces));
+        } else {
+            overlapErrors = ImmutableList.empty();
+        }
     }
 
     private static <D extends Direction> ArrayList<Pair<Pos, D>> calculateOverlapErrors(

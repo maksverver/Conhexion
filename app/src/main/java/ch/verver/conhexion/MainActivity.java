@@ -90,6 +90,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_actions, menu);
+
+        // Initialize checkboxes to the right state. Note: this does not propagate changes that are
+        // made to the live data after the menu is created (e.g. by sending intents), but that
+        // should be okay, since normally users only change the value through the menu.
+        menu.findItem(R.id.toggle_error_visibility).setChecked(
+                appState.getErrorVisibility().getValue() == ErrorVisibility.VISIBLE);
+
         return true;
     }
 
@@ -98,6 +105,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (item.getItemId()) {
             case R.id.switch_to_instructions:
                 activeFragmentIdLiveData.setValue(FragmentId.INSTRUCTIONS1);
+                return true;
+
+            case R.id.toggle_error_visibility:
+                if (item.isChecked()) {
+                    appState.getErrorVisibility().setValue(ErrorVisibility.HIDDEN);
+                    item.setChecked(false);
+                } else {
+                    appState.getErrorVisibility().setValue(ErrorVisibility.VISIBLE);
+                    item.setChecked(true);
+                }
                 return true;
 
             case R.id.switch_to_rect_puzzle:
