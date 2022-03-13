@@ -34,7 +34,12 @@ abstract class BaseGridView<D extends Direction> extends View {
     private static final int GRID_PADDING = 1;
 
     private static final float MIN_ZOOM_FACTOR = 1.0f;
-    private static final float MAX_ZOOM_FACTOR = 10.0f;
+
+    // Limit zoom level to 2x to address a performance bug: pieces are drawn with VectorDrawable
+    // which maintains an internal bitmap cache (instead of drawing to a canvas directly). This
+    // generates extremely large bitmaps at higher zoom levels, which hurt performance, even after
+    // subsequently zooming out!
+    private static final float MAX_ZOOM_FACTOR = 2.0f;
 
     // You can long-press on a piece to select the whole connected group for dragging (instead of
     // moving just a single piece). However, we ignore the long-press if the first piece has been
