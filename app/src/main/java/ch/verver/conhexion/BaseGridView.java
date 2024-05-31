@@ -6,6 +6,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
@@ -47,7 +48,7 @@ abstract class BaseGridView<D extends Direction> extends View {
     // This allows users to move a single piece out of a group by quickly dragging it away.
     private static final float LONG_PRESS_MAX_MOVEMENT = 0.35f;
 
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(Looper.myLooper());
     private final GridDrawer<D> gridDrawer;
     private final ScaleGestureDetector scaleGestureDetector;
 
